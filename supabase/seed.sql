@@ -1,0 +1,1 @@
+update public.site_settings set value = value || '{"delivery_estimate":"Delivery estimates are shown at checkout based on your address.","return_summary":"Eligible items can be returned within the period in our returns policy."}'::jsonb where setting_key = 'store';

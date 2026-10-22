@@ -1,0 +1,3 @@
+import { RegisterForm } from "@/components/register-form";
+export const metadata = { title: "Create an account", robots: { index: false, follow: false } };
+export default function RegisterPage(){ return <section className="mx-auto grid min-h-[70vh] max-w-[1120px] items-center gap-12 px-5 py-12 sm:px-8 lg:grid-cols-2 lg:gap-20 lg:px-12"><div><span className="eyebrow">Make yourself at home</span><h1 className="mt-4 font-display text-5xl sm:text-6xl">A little easier,<br/>next time.</h1><p className="mt-5 max-w-md text-sm leading-7 text-muted">Create an account to keep your addresses and order history close at hand.</p></div><div className="bg-paper p-6 sm:p-9"><RegisterForm/></div></section>; }

@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ivory: #f7f5f0;
+  --color-paper: #fffefa;
+  --color-ink: #252623;
+  --color-muted: #77796f;
+  --color-olive: #626b4f;
+  --color-olive-dark: #4f5940;
+  --color-line: #e7e4dc;
+  --color-sand: #eee9df;
+  --font-manrope: "Avenir Next", "Segoe UI", sans-serif;
+  --font-cormorant: Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-cormorant);
+}
+
+:root { color-scheme: light; background: var(--color-ivory); }
+html { scroll-behavior: smooth; }
+body { background: var(--color-ivory); color: var(--color-ink); font-family: var(--font-manrope); -webkit-font-smoothing: antialiased; }
+::selection { background: #dce1d1; color: #252623; }
+:focus-visible { outline: 2px solid #626b4f; outline-offset: 3px; }
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+img { color: transparent; }
+
+@layer components {
+  .eyebrow { @apply text-[10px] font-semibold uppercase tracking-[.24em] text-olive; }
+  .display-title { @apply font-display text-5xl font-normal leading-[.98] tracking-[-.035em] sm:text-6xl lg:text-7xl; }
+  .button-primary { @apply inline-flex min-h-12 items-center justify-center gap-2 bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[.16em] text-white transition-colors duration-200 hover:bg-olive focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-olive; }
+  .button-secondary { @apply inline-flex min-h-12 items-center justify-center gap-2 border border-ink/25 px-6 py-3 text-[11px] font-semibold uppercase tracking-[.16em] text-ink transition-colors duration-200 hover:border-olive hover:text-olive focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-olive; }
+  .field-label { @apply mb-2 block text-[11px] font-semibold uppercase tracking-[.12em] text-ink; }
+  .field-control { @apply min-h-12 w-full border border-line bg-paper px-4 py-3 text-sm text-ink outline-none transition-colors placeholder:text-muted/70 focus:border-olive; }
+  .section-rule { @apply h-px w-10 bg-olive; }
+}
+
+.brand-marquee { overflow: hidden; border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line); background: white; }
+.brand-marquee-viewport { overflow-x: auto; scrollbar-width: none; }
+.brand-marquee-viewport::-webkit-scrollbar { display: none; }
+.brand-marquee-track { display: flex; width: max-content; animation: zelno-brand-marquee 34s linear infinite; }
+.brand-marquee-group { display: flex; flex-shrink: 0; align-items: center; gap: 1.25rem; padding: .9rem 1.25rem .9rem 0; }
+.brand-logo-slot { display: block; flex-shrink: 0; background: white; }
+.brand-marquee-static-list { display: none; min-width: max-content; align-items: center; gap: 1.25rem; padding: .9rem 1.25rem .9rem 0; }
+.brand-marquee:hover .brand-marquee-track, .brand-marquee:focus-within .brand-marquee-track { animation-play-state: paused; }
+@keyframes zelno-brand-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+@media (max-width: 767px) {
+  .brand-marquee-group, .brand-marquee-static-list { gap: .5rem; padding-right: .5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .brand-marquee-track { display: none; animation: none; }
+  .brand-marquee-static-list { display: flex; }
+}
+
+.brand-marquee-single-list { display: flex; }

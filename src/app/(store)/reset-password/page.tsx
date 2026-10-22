@@ -1,0 +1,3 @@
+import { ResetPasswordForm } from "@/components/reset-password-form";
+export const metadata={title:"Choose a new password",robots:{index:false,follow:false}};
+export default function ResetPasswordPage(){return <section className="mx-auto grid min-h-[65vh] max-w-3xl place-items-center px-5 py-16"><div className="w-full max-w-md"><span className="eyebrow">Account help</span><h1 className="mt-4 font-display text-5xl">Choose a new password.</h1><p className="my-5 text-sm leading-7 text-muted">Use at least eight characters for your new password.</p><div className="bg-paper p-6"><ResetPasswordForm/></div></div></section>;}

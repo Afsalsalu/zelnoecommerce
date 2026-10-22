@@ -1,0 +1,29 @@
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Category = { id: string; name: string; slug: string; description: string; image_url: string | null; image_public_id: string | null; sort_order: number; is_active: boolean; featured_on_homepage: boolean };
+export type ProductImage = { id: string; product_id: string; cloudinary_public_id: string | null; url: string; alt_text: string; sort_order: number; width: number | null; height: number | null };
+export type ProductVariant = { id: string; product_id: string; name: string; option_values: Record<string, string>; sku: string | null; /** Integer paise from public.product_variants.price. */ price: number; compare_at_price: number | null; stock_quantity: number; stock_status: "in_stock" | "out_of_stock" | "continue_selling"; is_default: boolean; sort_order: number };
+export type ContentBlock = { id: string; product_id: string; block_type: "heading" | "rich_text" | "full_width_image" | "two_image_gallery" | "image_with_text" | "video_embed" | "feature_list" | "specification_table" | "comparison" | "faq" | "divider"; title: string; payload: Record<string, unknown>; sort_order: number; is_visible: boolean };
+export type ProductTag = { name: string; slug: string };
+export type Product = {
+  id: string; category_id: string | null; title: string; slug: string; sku: string | null;
+  short_description: string; description: string; status: "draft" | "published"; /** Integer paise from public.products.price. */ price: number;
+  compare_at_price: number | null; stock_quantity: number; continue_selling: boolean; badge: string | null;
+  is_bestseller: boolean; seo_title: string | null; seo_description: string | null; seo_image_url: string | null;
+  video_url: string | null; related_product_ids: string[]; published_at: string | null; updated_at?: string;
+  category?: Category | null; tags?: ProductTag[]; product_images?: ProductImage[]; product_variants?: ProductVariant[];
+  product_content_blocks?: ContentBlock[]; reviews?: Review[];
+};
+export type Review = { id: string; product_id: string; customer_name: string; rating: number; body: string; created_at: string };
+export type HomepageSection = { id: string; section_key: string; title: string; content: Record<string, unknown>; sort_order: number; is_visible: boolean };
+export type HomepageBanner = { id: string; banner_type?: "hero" | "offer"; heading: string; description: string; cta_label: string; cta_href: string; desktop_image_url: string | null; mobile_image_url: string | null; image_alt: string; offer_badge?: string | null; alignment?: "left" | "right"; starts_at?: string | null; ends_at?: string | null; is_active: boolean; sort_order: number };
+export type HomepageBrand = { id: string; name: string; logo_url: string; destination_url: string | null; alt_text: string; is_active: boolean; sort_order: number };
+export type SitePage = { id: string; title: string; slug: string; body: string; seo_title: string | null; seo_description: string | null; is_published: boolean };
+export type StoreSettings = {
+  store_name?: string; tagline?: string; contact_email?: string; contact_phone?: string; whatsapp_number?: string;
+  currency?: string; /** Monetary values from the database are integer paise. */ shipping_fee?: number; free_shipping_minimum?: number; cod_enabled?: boolean;
+  logo_url?: string; social_links?: Record<string, string>; seo_title?: string; seo_description?: string;
+  delivery_estimate?: string; return_summary?: string;
+};
+export type OrderStatus = "new" | "confirmed" | "packed" | "shipped" | "delivered" | "cancelled" | "returned" | "refunded";
+export type PaymentStatus = "pending" | "payment_pending" | "paid" | "failed" | "cancelled" | "refunded";
+export type OrderSummary = { id: string; order_number: string; customer_name: string; customer_email: string; customer_phone: string; order_status: OrderStatus; payment_status: PaymentStatus; payment_method: "cod" | "razorpay"; subtotal: number; discount_total: number; shipping_total: number; total: number; placed_at: string };

@@ -1,0 +1,34 @@
+node_modules/
+.next/
+.turbo/
+.vercel/
+dist/
+build/
+out/
+*.tsbuildinfo
+coverage/
+test-results/
+playwright-report/
+.nyc_output/
+*.lcov
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+supabase/.temp/
+
+# Local archives and bundles
+*.zip
+*.tar
+*.tar.gz
+
+# Local certificates and secret files
+*.pem
+*.key
+*.p12
+*.pfx
+*.secret
+*.credentials
+secrets/
+.secrets/
