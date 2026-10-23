@@ -3,9 +3,15 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { rupeesToPaise } from "@/lib/money";
 import { normalizeNavigation } from "@/lib/navigation";
+import { DEFAULT_ACTION_BUTTON_STYLES, resolveActionButtonStyles } from "@/lib/action-button-styles";
 import type { Category, HomepageBanner, HomepageBrand, HomepageSection, Product, SitePage, StoreSettings } from "@/lib/types";
 
-const brandFallback: StoreSettings = { store_name: "ZELNO Kitchen", currency: "INR", shipping_fee: 0, free_shipping_minimum: 0, cod_enabled: true };
+const brandFallback: StoreSettings = {
+  store_name: "ZELNO Kitchen", currency: "INR", shipping_fee: 0, free_shipping_minimum: 0, cod_enabled: true,
+  whatsapp_enabled: false, whatsapp_product_enabled: false, whatsapp_cart_enabled: false, whatsapp_checkout_enabled: false,
+  whatsapp_support_enabled: false, whatsapp_support_message: "Hello, I need help with ZELNO.",
+  product_action_button_styles: DEFAULT_ACTION_BUTTON_STYLES,
+};
 const PRODUCT_JOIN = "*, category:categories!products_category_id_fkey(*), product_images(*), product_variants(*), product_content_blocks(*)";
 function isScheduledBannerActive(banner: HomepageBanner, now = Date.now()) {
   const startsAt = banner.starts_at ? Date.parse(banner.starts_at) : null;
@@ -20,7 +26,8 @@ export async function getStoreSettings(): Promise<StoreSettings> {
   try {
     const supabase = await createServerSupabase();
     const { data } = await supabase.from("site_settings").select("value").eq("setting_key", "store").maybeSingle();
-    return { ...brandFallback, ...(data?.value as Partial<StoreSettings> | undefined) };
+    const value = data?.value as Partial<StoreSettings> | undefined;
+    return { ...brandFallback, ...value, product_action_button_styles: resolveActionButtonStyles(value?.product_action_button_styles) };
   } catch { return brandFallback; }
 }
 
@@ -115,6 +122,15 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       supabase.from("product_tag_map").select("tags(name,slug)").eq("product_id", data.id),
     ]);
     return { ...data, product_images: data.product_images ?? [], product_variants: data.product_variants ?? [], product_content_blocks: [...(data.product_content_blocks ?? [])].sort((a, b) => a.sort_order - b.sort_order), reviews: reviewResult.data ?? [], tags: tagsResult.data ?? [] } as unknown as Product;
+  } catch { return null; }
+}
+export async function getProductById(id: string): Promise<Product | null> {
+  if (!isSupabaseConfigured) return null;
+  try {
+    const supabase = await createServerSupabase();
+    const { data, error } = await supabase.from("products").select(PRODUCT_JOIN).eq("id", id).eq("status", "published").maybeSingle();
+    if (error || !data) return null;
+    return { ...data, product_images: data.product_images ?? [], product_variants: data.product_variants ?? [], product_content_blocks: [...(data.product_content_blocks ?? [])].sort((a, b) => a.sort_order - b.sort_order) } as unknown as Product;
   } catch { return null; }
 }
 export async function getCategoryBySlug(slug: string) { if (!isSupabaseConfigured) return null; try { const supabase = await createServerSupabase(); const { data } = await supabase.from("categories").select("*").eq("slug", slug).eq("is_active", true).maybeSingle(); return (data as Category | null) ?? null; } catch { return null; } }

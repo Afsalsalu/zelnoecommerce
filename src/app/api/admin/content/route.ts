@@ -3,6 +3,8 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { HOMEPAGE_DEFAULT_SECTIONS } from "@/lib/homepage-sections";
 import { createServiceSupabase } from "@/lib/supabase/server";
+import { normalizeWhatsAppNumber } from "@/lib/whatsapp";
+import { validateActionButtonStyles } from "@/lib/action-button-styles";
 
 const uuid = z.string().uuid();
 const relativePath = z.string().max(250).refine((value) => value.startsWith("/") && !value.startsWith("//"), "Use a site-relative path.");
@@ -15,6 +17,11 @@ const optionalDestination = z.string().trim().max(500).refine((value) => {
 }, "Use a site-relative path or HTTPS URL.");
 const optionalScheduleDate = z.string().trim().max(80).refine((value) => !value || Number.isFinite(Date.parse(value)), "Use a valid schedule date.");
 const socialLinks = z.record(z.string().trim().min(1).max(50), optionalUrl).optional();
+const actionButtonStyles = z.unknown().optional().superRefine((value, context) => {
+  if (value === undefined) return;
+  const result = validateActionButtonStyles(value);
+  if (!result.valid) context.addIssue({ code: "custom", path: result.field ? [result.field] : [], message: result.message });
+});
 const storeSettingsSchema = z.object({
   store_name: z.string().trim().max(120).optional(),
   tagline: z.string().trim().max(300).optional(),
@@ -31,7 +38,24 @@ const storeSettingsSchema = z.object({
   seo_title: z.string().trim().max(180).optional(),
   seo_description: z.string().trim().max(320).optional(),
   social_links: socialLinks,
-}).strict();
+  whatsapp_enabled: z.boolean().optional(),
+  whatsapp_product_enabled: z.boolean().optional(),
+  whatsapp_cart_enabled: z.boolean().optional(),
+  whatsapp_checkout_enabled: z.boolean().optional(),
+  whatsapp_product_button_label: z.string().trim().min(1).max(80).optional(),
+  whatsapp_order_button_label: z.string().trim().min(1).max(80).optional(),
+  whatsapp_message_intro: z.string().trim().min(1).max(240).optional(),
+  whatsapp_support_enabled: z.boolean().optional(),
+  whatsapp_support_message: z.string().trim().max(240).optional(),
+  product_action_button_styles: actionButtonStyles,
+}).strict().superRefine((value, context) => {
+  if (value.whatsapp_number) {
+    try { normalizeWhatsAppNumber(value.whatsapp_number); }
+    catch (error) { context.addIssue({ code: "custom", path: ["whatsapp_number"], message: error instanceof Error ? error.message : "Enter a valid WhatsApp number." }); }
+  }
+  if ((value.whatsapp_enabled || value.whatsapp_support_enabled) && !value.whatsapp_number) context.addIssue({ code: "custom", path: ["whatsapp_number"], message: "A WhatsApp business number is required when WhatsApp ordering or support is enabled." });
+  if (value.whatsapp_support_enabled && !value.whatsapp_support_message) context.addIssue({ code: "custom", path: ["whatsapp_support_message"], message: "A support message is required when the floating support button is enabled." });
+});
 const footerSettingsSchema = z.object({ description: z.string().trim().max(1200).optional(), newsletter_enabled: z.boolean().optional(), social_links: socialLinks }).strict();
 const navigationSettingsSchema = z.object({ links: z.array(z.object({ label: z.string().trim().min(1).max(80), href: relativePath })).max(30) }).strict();
 const schemas = {
@@ -144,7 +168,23 @@ export async function POST(request: Request) {
       const valueSchema = parsed.data.setting_key === "store" ? storeSettingsSchema : parsed.data.setting_key === "footer" ? footerSettingsSchema : navigationSettingsSchema;
       const value = valueSchema.safeParse(parsed.data.value);
       if (!value.success) return invalidFields(value);
-      const result = await admin.from("site_settings").upsert({ ...parsed.data, value: value.data, updated_at: new Date().toISOString() }, { onConflict: "setting_key" }).select("id").single();
+      const rawValue = value.data as Record<string, unknown>;
+      const buttonStyles = rawValue.product_action_button_styles === undefined ? undefined : validateActionButtonStyles(rawValue.product_action_button_styles);
+      let existingStoreValue: Record<string, unknown> = {};
+      if (parsed.data.setting_key === "store") {
+        const existing = await admin.from("site_settings").select("value").eq("setting_key", "store").maybeSingle();
+        if (existing.error) return NextResponse.json({ error: "Could not load the existing store settings." }, { status: 503 });
+        if (existing.data?.value && typeof existing.data.value === "object" && !Array.isArray(existing.data.value)) existingStoreValue = existing.data.value as Record<string, unknown>;
+      }
+      const normalizedValue = parsed.data.setting_key === "store" && value.data && typeof value.data === "object"
+        ? {
+          ...rawValue,
+          whatsapp_number: rawValue.whatsapp_number ? normalizeWhatsAppNumber(String(rawValue.whatsapp_number)) : "",
+          ...(buttonStyles?.valid ? { product_action_button_styles: buttonStyles.data } : {}),
+        }
+        : value.data;
+      const valueToSave = parsed.data.setting_key === "store" && normalizedValue && typeof normalizedValue === "object" && !Array.isArray(normalizedValue) ? { ...existingStoreValue, ...(normalizedValue as Record<string, unknown>) } : normalizedValue;
+      const result = await admin.from("site_settings").upsert({ ...parsed.data, value: valueToSave, updated_at: new Date().toISOString() }, { onConflict: "setting_key" }).select("id").single();
       if (result.error) return NextResponse.json({ error: "Could not save this setting." }, { status: 409 });
       return NextResponse.json({ ok: true, id: result.data?.id }, { status: 201 });
     }

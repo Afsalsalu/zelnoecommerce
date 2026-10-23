@@ -29,9 +29,20 @@ img { color: transparent; }
   .display-title { @apply font-display text-5xl font-normal leading-[.98] tracking-[-.035em] sm:text-6xl lg:text-7xl; }
   .button-primary { @apply inline-flex min-h-12 items-center justify-center gap-2 bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[.16em] text-white transition-colors duration-200 hover:bg-olive focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-olive; }
   .button-secondary { @apply inline-flex min-h-12 items-center justify-center gap-2 border border-ink/25 px-6 py-3 text-[11px] font-semibold uppercase tracking-[.16em] text-ink transition-colors duration-200 hover:border-olive hover:text-olive focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-olive; }
+  .action-button { background-color: var(--action-button-background, #242520); border-color: var(--action-button-background, #242520); color: var(--action-button-text, #FFFFFF); }
+  .action-button:hover:not(:disabled) { background-color: var(--action-button-hover, #111210); border-color: var(--action-button-hover, #111210); color: var(--action-button-text, #FFFFFF); }
+  .action-button:focus-visible { outline: 2px solid #B8DCC9; outline-offset: 4px; }
+  .action-button:disabled { background-color: #D1D5DB; border-color: #D1D5DB; color: #6B7280; }
+  .floating-whatsapp-support { position: fixed; right: 24px; bottom: 24px; z-index: 20; display: grid; width: 3.25rem; height: 3.25rem; place-items: center; border-radius: 9999px; background: #1F5E47; color: #FFFFFF; box-shadow: 0 12px 28px rgba(31, 94, 71, .28); transition: background-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+  .floating-whatsapp-support:hover { background: #174634; transform: translateY(-2px); box-shadow: 0 15px 32px rgba(31, 94, 71, .34); }
+  .floating-whatsapp-support:focus-visible { outline: 2px solid #B8DCC9; outline-offset: 4px; }
   .field-label { @apply mb-2 block text-[11px] font-semibold uppercase tracking-[.12em] text-ink; }
   .field-control { @apply min-h-12 w-full border border-line bg-paper px-4 py-3 text-sm text-ink outline-none transition-colors placeholder:text-muted/70 focus:border-olive; }
   .section-rule { @apply h-px w-10 bg-olive; }
+}
+
+@media (max-width: 767px) {
+  .floating-whatsapp-support { right: 16px; bottom: 16px; }
 }
 
 .brand-marquee { overflow: hidden; border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line); background: white; }

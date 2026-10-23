@@ -1,0 +1,3 @@
+export default function WhatsAppOrdersLoading() {
+  return <div className="space-y-8" aria-busy="true" aria-label="Loading WhatsApp Settings"><div className="space-y-3"><div className="h-3 w-32 animate-pulse bg-line" /><div className="h-12 w-72 animate-pulse bg-line" /><div className="h-4 w-full max-w-2xl animate-pulse bg-line" /></div><div className="space-y-6 border border-line bg-paper p-5 sm:p-7"><div className="h-12 animate-pulse bg-line" /><div className="grid gap-4 sm:grid-cols-2"><div className="h-20 animate-pulse bg-line" /><div className="h-20 animate-pulse bg-line" /><div className="h-20 animate-pulse bg-line" /><div className="h-20 animate-pulse bg-line" /></div><div className="h-28 animate-pulse bg-line" /></div></div>;
+}

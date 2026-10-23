@@ -17,3 +17,8 @@ export const checkoutSchema = z.object({
   items: z.array(cartLineSchema).min(1).max(40),
 });
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
+
+export const whatsappOrderSchema = checkoutSchema.omit({ paymentMethod: true }).extend({
+  requestKey: z.string().uuid(),
+});
+export type WhatsAppOrderInput = z.infer<typeof whatsappOrderSchema>;

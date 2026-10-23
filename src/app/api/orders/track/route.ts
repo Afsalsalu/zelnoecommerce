@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Enter an order number and the email or phone used at checkout." }, { status: 400 });
   if (!isServiceRoleConfigured) return NextResponse.json({ error: "Order tracking is not connected yet." }, { status: 503 });
   const admin = createServiceSupabase();
-  const { data: order } = await admin.from("orders").select("id,order_number,customer_email,customer_phone,order_status,payment_status,payment_method,subtotal,discount_total,shipping_total,total,placed_at,tracking_courier,tracking_number").eq("order_number", parsed.data.orderNumber.toUpperCase()).maybeSingle();
+  const { data: order } = await admin.from("orders").select("id,order_number,customer_email,customer_phone,order_status,order_source,whatsapp_status,payment_status,payment_method,subtotal,discount_total,shipping_total,total,placed_at,tracking_courier,tracking_number").eq("order_number", parsed.data.orderNumber.toUpperCase()).maybeSingle();
   if (!order) return NextResponse.json({ error: "We couldn't find an order matching those details." }, { status: 404 });
   const contact = parsed.data.contact.trim().toLowerCase();
   const matchesEmail = order.customer_email.toLowerCase() === contact;

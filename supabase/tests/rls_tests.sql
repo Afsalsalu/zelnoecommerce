@@ -39,6 +39,7 @@ do $$ begin
   if exists (select 1 from public.addresses where user_id = current_setting('rls_test.user_b')::uuid) then raise exception 'Address isolation failed.'; end if;
   if exists (select 1 from public.carts where user_id = current_setting('rls_test.user_b')::uuid) then raise exception 'Cart isolation failed.'; end if;
   if exists (select 1 from public.orders where user_id = current_setting('rls_test.user_b')::uuid) then raise exception 'Order isolation failed.'; end if;
+  if exists (select 1 from public.orders where order_source = 'whatsapp' and user_id = current_setting('rls_test.user_b')::uuid) then raise exception 'WhatsApp order isolation failed.'; end if;
   if exists (select 1 from public.order_items oi join public.orders o on o.id = oi.order_id where o.user_id = current_setting('rls_test.user_b')::uuid) then raise exception 'Order item isolation failed.'; end if;
 end $$;
 
@@ -74,6 +75,10 @@ insert into public.categories (name, slug) values ('RLS test only', 'rls-test-on
 do $$ begin
   if has_function_privilege('anon', 'public.create_checkout_order(text, uuid, jsonb, jsonb, text, text)', 'execute') then raise exception 'Anonymous checkout RPC execution was granted.'; end if;
   if has_function_privilege('authenticated', 'public.create_checkout_order(text, uuid, jsonb, jsonb, text, text)', 'execute') then raise exception 'Authenticated checkout RPC execution was granted.'; end if;
+  if has_function_privilege('anon', 'public.create_whatsapp_order_request(text, uuid, jsonb, jsonb, text, uuid)', 'execute') then raise exception 'Anonymous WhatsApp request RPC execution was granted.'; end if;
+  if has_function_privilege('authenticated', 'public.create_whatsapp_order_request(text, uuid, jsonb, jsonb, text, uuid)', 'execute') then raise exception 'Authenticated WhatsApp request RPC execution was granted.'; end if;
+  if has_function_privilege('anon', 'public.confirm_whatsapp_order(uuid, uuid)', 'execute') then raise exception 'Anonymous WhatsApp confirmation RPC execution was granted.'; end if;
+  if has_function_privilege('authenticated', 'public.confirm_whatsapp_order(uuid, uuid)', 'execute') then raise exception 'Authenticated WhatsApp confirmation RPC execution was granted.'; end if;
   if has_function_privilege('anon', 'public.release_failed_payment_stock(text)', 'execute') then raise exception 'Anonymous inventory-release RPC execution was granted.'; end if;
 end $$;
 

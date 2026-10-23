@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { ClipboardList, FileText, House, Inbox, LayoutDashboard, Menu, MessageCircle, Package, Settings, Tags, TicketPercent, Users, X } from "lucide-react";
 
+type AdminNavigationIcon = "layout-dashboard" | "package" | "tags" | "clipboard-list" | "users" | "ticket-percent" | "house" | "file-text" | "settings" | "message-circle" | "inbox";
 type AdminNavigationModule = {
   slug: string;
   label: string;
+  icon: AdminNavigationIcon;
 };
 
 type AdminNavigationProps = {
@@ -16,6 +18,20 @@ type AdminNavigationProps = {
 
 const navigationLinkClass =
   "flex min-h-10 items-center gap-3 rounded-sm px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[.11em] transition-colors";
+
+const navigationIcons = {
+  "layout-dashboard": LayoutDashboard,
+  package: Package,
+  tags: Tags,
+  "clipboard-list": ClipboardList,
+  users: Users,
+  "ticket-percent": TicketPercent,
+  house: House,
+  "file-text": FileText,
+  settings: Settings,
+  "message-circle": MessageCircle,
+  inbox: Inbox,
+} as const;
 
 function isCurrentPath(pathname: string | null, href: string) {
   if (href === "/admin") {
@@ -31,8 +47,8 @@ export function AdminNavigation({ modules }: AdminNavigationProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const items = [
-    { href: "/admin", label: "Overview" },
-    ...modules.map(({ slug, label }) => ({ href: `/admin/${slug}`, label })),
+    { href: "/admin", label: "Overview", icon: "layout-dashboard" as const },
+    ...modules.map(({ slug, label, icon }) => ({ href: `/admin/${slug}`, label, icon })),
   ];
 
   useEffect(() => {
@@ -62,7 +78,7 @@ export function AdminNavigation({ modules }: AdminNavigationProps) {
   }, [isOpen]);
 
   const renderLinks = (onNavigate?: () => void) =>
-    items.map(({ href, label }) => {
+    items.map(({ href, label, icon }) => {
       const active = isCurrentPath(pathname, href);
 
       return (
@@ -77,12 +93,7 @@ export function AdminNavigation({ modules }: AdminNavigationProps) {
               : "text-muted hover:bg-sand/70 hover:text-ink"
           }`}
         >
-          <span
-            aria-hidden
-            className={`size-1.5 shrink-0 rounded-full ${
-              active ? "bg-olive" : "bg-transparent"
-            }`}
-          />
+          {(() => { const Icon = navigationIcons[icon]; return <Icon aria-hidden size={15} strokeWidth={1.5} className={active ? "text-olive" : "text-muted"} />; })()}
           <span>{label}</span>
         </Link>
       );

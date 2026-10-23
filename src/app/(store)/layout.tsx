@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { FloatingWhatsAppSupport } from "@/components/floating-whatsapp-support";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getAnnouncement, getFooterSettings, getNavigation, getStoreSettings } from "@/lib/store";
@@ -38,6 +39,7 @@ export default async function StoreLayout({ children }: Readonly<{ children: Rea
       <SiteHeader settings={settings} navigation={navigation} announcement={announcement} />
       <main id="main-content" className="min-h-[65vh]">{children}</main>
       <SiteFooter settings={settings} footer={footer} />
+      <FloatingWhatsAppSupport settings={settings} />
     </>
   );
 }

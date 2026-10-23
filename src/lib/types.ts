@@ -1,3 +1,4 @@
+import type { ActionButtonStyles } from "@/lib/action-button-styles";
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 export type Category = { id: string; name: string; slug: string; description: string; image_url: string | null; image_public_id: string | null; sort_order: number; is_active: boolean; featured_on_homepage: boolean };
 export type ProductImage = { id: string; product_id: string; cloudinary_public_id: string | null; url: string; alt_text: string; sort_order: number; width: number | null; height: number | null };
@@ -23,7 +24,13 @@ export type StoreSettings = {
   currency?: string; /** Monetary values from the database are integer paise. */ shipping_fee?: number; free_shipping_minimum?: number; cod_enabled?: boolean;
   logo_url?: string; social_links?: Record<string, string>; seo_title?: string; seo_description?: string;
   delivery_estimate?: string; return_summary?: string;
+  whatsapp_enabled?: boolean; whatsapp_product_enabled?: boolean; whatsapp_cart_enabled?: boolean; whatsapp_checkout_enabled?: boolean;
+  whatsapp_product_button_label?: string; whatsapp_order_button_label?: string; whatsapp_message_intro?: string;
+  whatsapp_support_enabled?: boolean; whatsapp_support_message?: string;
+  product_action_button_styles?: ActionButtonStyles;
 };
 export type OrderStatus = "new" | "confirmed" | "packed" | "shipped" | "delivered" | "cancelled" | "returned" | "refunded";
+export type OrderSource = "website" | "whatsapp";
+export type WhatsAppOrderStatus = "awaiting_whatsapp_confirmation" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled";
 export type PaymentStatus = "pending" | "payment_pending" | "paid" | "failed" | "cancelled" | "refunded";
-export type OrderSummary = { id: string; order_number: string; customer_name: string; customer_email: string; customer_phone: string; order_status: OrderStatus; payment_status: PaymentStatus; payment_method: "cod" | "razorpay"; subtotal: number; discount_total: number; shipping_total: number; total: number; placed_at: string };
+export type OrderSummary = { id: string; order_number: string; customer_name: string; customer_email: string; customer_phone: string; order_status: OrderStatus; order_source?: OrderSource; whatsapp_status?: WhatsAppOrderStatus | null; payment_status: PaymentStatus; payment_method: "cod" | "razorpay"; subtotal: number; discount_total: number; shipping_total: number; total: number; placed_at: string };
