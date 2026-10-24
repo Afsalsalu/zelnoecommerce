@@ -44,7 +44,7 @@ export function StorefrontMobileBottomNav({ children }: StorefrontMobileBottomNa
       <div aria-hidden="true" className="md:hidden" style={{ height: "calc(4rem + env(safe-area-inset-bottom))" }} />
       <nav
         aria-label="Storefront mobile navigation"
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-white shadow-[0_-4px_18px_rgba(37,38,35,0.08)] md:hidden"
+        className="storefront-bottom-nav fixed inset-x-0 bottom-0 z-50 border-t border-line bg-white md:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="grid min-h-16 grid-cols-4">

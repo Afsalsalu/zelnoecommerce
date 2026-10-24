@@ -6,7 +6,7 @@ type FooterData = { description?: string; social_links?: Record<string, string>;
 const policies = [["Shipping policy", "/shipping-policy"], ["Returns & refunds", "/return-refund-policy"], ["Privacy", "/privacy-policy"], ["Terms", "/terms-conditions"]];
 export function SiteFooter({ settings, footer }: { settings: StoreSettings; footer: FooterData }) {
   return (
-    <footer className="mt-24 border-t border-line bg-[#f1efe8]">
+    <footer className="storefront-footer mt-24 border-t border-line">
       <div className="mx-auto grid max-w-[1440px] gap-12 px-5 py-14 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1.4fr_.8fr_.8fr] lg:px-12 lg:py-20">
         <div className="max-w-sm">
           <Link href="/" className="inline-flex items-center gap-2.5"><span aria-hidden className="grid size-9 place-items-center border border-olive/50 font-display text-[14px] text-olive">Z</span><span className="text-[12px] font-semibold uppercase tracking-[.24em]">{settings.store_name || "ZELNO"}</span></Link>

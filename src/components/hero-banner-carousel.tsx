@@ -93,10 +93,10 @@ export function HeroBannerCarousel({ banners, storeName }: { banners: HomepageBa
           </div>
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[1]" style={heroOverlayStyle(banner)} />
           <div className="relative z-[2] mx-auto flex h-full max-w-[1440px] items-center px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
-            <div className="max-w-2xl">
+            <div className={`hero-copy max-w-2xl ${banner.overlay_color === "light" ? "text-ink" : "text-white"}`}>
               <span className="eyebrow">{storeName || "ZELNO Kitchen"}</span>
               <h1 className="mt-5 font-display text-6xl leading-[.94] tracking-[-.04em] sm:text-7xl lg:text-[92px]">{banner.heading}</h1>
-              <p className="mt-6 max-w-lg text-sm leading-7 text-ink/75 sm:text-base">{banner.description}</p>
+              <p className="mt-6 max-w-lg text-sm leading-7 opacity-80 sm:text-base">{banner.description}</p>
               <Link href={banner.cta_href} tabIndex={visible ? 0 : -1} className="button-primary mt-8">{banner.cta_label}<ArrowRight size={15} /></Link>
             </div>
           </div>
@@ -106,10 +106,10 @@ export function HeroBannerCarousel({ banners, storeName }: { banners: HomepageBa
     {hasControls && <>
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-gradient-to-t from-ink/45 via-ink/10 to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 left-4 z-30 flex items-center sm:left-7 lg:left-10">
-        <button type="button" aria-label="Previous banner" onClick={() => move(-1)} className="pointer-events-auto grid size-10 place-items-center rounded-full border border-white/25 bg-ink/80 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-olive sm:size-11"><ArrowLeft size={17} aria-hidden="true" /></button>
+        <button type="button" aria-label="Previous banner" onClick={() => move(-1)} className="hero-control pointer-events-auto grid size-10 place-items-center rounded-full border bg-ink/80 shadow-lg backdrop-blur-sm transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-olive sm:size-11"><ArrowLeft size={17} aria-hidden="true" /></button>
       </div>
       <div className="pointer-events-none absolute inset-y-0 right-4 z-30 flex items-center sm:right-7 lg:right-10">
-        <button type="button" aria-label="Next banner" onClick={() => move(1)} className="pointer-events-auto grid size-10 place-items-center rounded-full border border-white/25 bg-ink/80 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-olive sm:size-11"><ArrowRight size={17} aria-hidden="true" /></button>
+        <button type="button" aria-label="Next banner" onClick={() => move(1)} className="hero-control pointer-events-auto grid size-10 place-items-center rounded-full border bg-ink/80 shadow-lg backdrop-blur-sm transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-olive sm:size-11"><ArrowRight size={17} aria-hidden="true" /></button>
       </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-5 z-30 flex justify-center sm:bottom-7">
         <div className="pointer-events-auto flex items-center gap-2" aria-label="Choose homepage banner">

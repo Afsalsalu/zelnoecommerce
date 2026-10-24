@@ -5,6 +5,7 @@ import { rupeesToPaise } from "@/lib/money";
 import { normalizeNavigation } from "@/lib/navigation";
 import { DEFAULT_ACTION_BUTTON_STYLES, resolveActionButtonStyles } from "@/lib/action-button-styles";
 import { DEFAULT_CUSTOMER_LOGIN_REQUIREMENTS, resolveCustomerLoginRequirements } from "@/lib/customer-login-requirements";
+import { DEFAULT_STOREFRONT_THEME, resolveStorefrontTheme } from "@/lib/storefront-theme";
 import type { Category, HomepageBanner, HomepageBrand, HomepageSection, Product, SitePage, StoreSettings } from "@/lib/types";
 
 const brandFallback: StoreSettings = {
@@ -13,6 +14,7 @@ const brandFallback: StoreSettings = {
   whatsapp_support_enabled: false, whatsapp_support_message: "Hello, I need help with ZELNO.",
   product_action_button_styles: DEFAULT_ACTION_BUTTON_STYLES,
   customer_login_requirements: DEFAULT_CUSTOMER_LOGIN_REQUIREMENTS,
+  storefront_theme: DEFAULT_STOREFRONT_THEME,
 };
 export const PRODUCT_JOIN = "*, category:categories!products_category_id_fkey(*), product_images(*), product_variants(*), product_content_blocks(*)";
 
@@ -67,7 +69,7 @@ export async function getStoreSettings(): Promise<StoreSettings> {
       return brandFallback;
     }
     const value = data?.value as Partial<StoreSettings> | undefined;
-    return { ...brandFallback, ...value, product_action_button_styles: resolveActionButtonStyles(value?.product_action_button_styles), customer_login_requirements: resolveCustomerLoginRequirements(value?.customer_login_requirements) };
+    return { ...brandFallback, ...value, product_action_button_styles: resolveActionButtonStyles(value?.product_action_button_styles), customer_login_requirements: resolveCustomerLoginRequirements(value?.customer_login_requirements), storefront_theme: resolveStorefrontTheme(value?.storefront_theme) };
   } catch (error) { logPublicQueryError("site_settings(store)", error); return brandFallback; }
 }
 

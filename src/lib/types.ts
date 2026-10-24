@@ -1,5 +1,6 @@
 import type { ActionButtonStyles } from "@/lib/action-button-styles";
 import type { CustomerLoginRequirements } from "@/lib/customer-login-requirements";
+import type { StorefrontTheme } from "@/lib/storefront-theme";
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 export type Category = { id: string; name: string; slug: string; description: string; image_url: string | null; image_public_id: string | null; sort_order: number; is_active: boolean; featured_on_homepage: boolean };
 export type ProductImage = { id: string; product_id: string; cloudinary_public_id: string | null; url: string; alt_text: string; sort_order: number; width: number | null; height: number | null };
@@ -30,6 +31,7 @@ export type StoreSettings = {
   whatsapp_support_enabled?: boolean; whatsapp_support_message?: string;
   product_action_button_styles?: ActionButtonStyles;
   customer_login_requirements?: CustomerLoginRequirements;
+  storefront_theme?: StorefrontTheme;
 };
 export type OrderStatus = "new" | "confirmed" | "packed" | "shipped" | "delivered" | "cancelled" | "returned" | "refunded";
 export type OrderSource = "website" | "whatsapp";

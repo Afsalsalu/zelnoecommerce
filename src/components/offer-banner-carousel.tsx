@@ -21,7 +21,7 @@ export function OfferBannerCarousel({ banners }: { banners: HomepageBanner[] }) 
         const imageOnRight = banner.alignment === "right";
         const visible = index === active;
         return <article key={banner.id} aria-hidden={!visible} aria-roledescription="slide" aria-label={`Offer ${index + 1} of ${banners.length}`} className={`grid min-h-[520px] grid-rows-[minmax(220px,1fr)_minmax(260px,1fr)] bg-paper transition-opacity duration-500 motion-reduce:transition-none lg:grid-cols-2 lg:grid-rows-1 ${visible ? "relative opacity-100" : "pointer-events-none absolute inset-0 opacity-0"}`}>
-          <div className={`relative min-h-[220px] overflow-hidden bg-[#efede6] lg:min-h-[520px] ${imageOnRight ? "lg:order-2" : "lg:order-1"}`}>
+          <div className={`relative min-h-[220px] overflow-hidden bg-sand lg:min-h-[520px] ${imageOnRight ? "lg:order-2" : "lg:order-1"}`}>
             {banner.mobile_image_url && <Image src={banner.mobile_image_url} alt={banner.image_alt || banner.heading} fill sizes="(max-width: 1023px) 100vw, 50vw" className="object-contain p-4 md:hidden" />}
             {banner.desktop_image_url && <Image src={banner.desktop_image_url} alt={banner.image_alt || banner.heading} fill sizes="(max-width: 1023px) 100vw, 50vw" className={`${banner.mobile_image_url ? "hidden md:block" : "block"} object-contain p-5 sm:p-8`} />}
           </div>

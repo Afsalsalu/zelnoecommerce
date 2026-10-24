@@ -19,7 +19,7 @@ export function CheckoutSavedAddresses({ addresses, selectedId, expanded, onExpa
   const card = (address: SavedAddress, isLastUsed: boolean) => {
     const selected = selectedId === address.id;
     return (
-      <label key={address.id} className={`block cursor-pointer border p-4 transition-colors ${selected ? "border-olive bg-[#eef0e7]" : "border-line bg-ivory hover:border-olive/60"}`}>
+      <label key={address.id} className={`block cursor-pointer border p-4 transition-colors ${selected ? "border-olive bg-sand" : "border-line bg-ivory hover:border-olive/60"}`}>
         <span className="flex items-start gap-3">
           <input type="radio" name="saved-address" value={address.id} checked={selected} onChange={() => onSelect(address)} className="mt-1 accent-olive" />
           <span className="min-w-0 flex-1">

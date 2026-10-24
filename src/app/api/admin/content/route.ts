@@ -8,6 +8,7 @@ import { createServiceSupabase } from "@/lib/supabase/server";
 import { normalizeWhatsAppNumber } from "@/lib/whatsapp";
 import { validateActionButtonStyles } from "@/lib/action-button-styles";
 import { customerLoginRequirementsSchema } from "@/lib/customer-login-requirements";
+import { storefrontThemeSchema } from "@/lib/storefront-theme";
 
 const uuid = z.string().uuid();
 const relativePath = z.string().trim().min(1, "Button path is required.").max(250).refine((value) => value.startsWith("/") && !value.startsWith("//"), "Use a site-relative path.");
@@ -52,6 +53,7 @@ const storeSettingsSchema = z.object({
   whatsapp_support_message: z.string().trim().max(240).optional(),
   product_action_button_styles: actionButtonStyles,
   customer_login_requirements: customerLoginRequirementsSchema.optional(),
+  storefront_theme: storefrontThemeSchema.optional(),
 }).strict().superRefine((value, context) => {
   if (value.whatsapp_number) {
     try { normalizeWhatsAppNumber(value.whatsapp_number); }

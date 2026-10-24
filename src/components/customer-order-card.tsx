@@ -132,7 +132,7 @@ export function CustomerOrderCard({ href, orderNumber, status, items }: Customer
           ) : (
             <span className="absolute inset-0 grid place-items-center px-1 text-center text-[9px] uppercase tracking-[.12em] text-muted">Image coming soon</span>
           )}
-          {additionalItemCount > 0 && <span className="absolute bottom-1 left-1 rounded-sm bg-ink/80 px-1.5 py-1 text-[9px] font-medium text-white">+{additionalItemCount} items</span>}
+          {additionalItemCount > 0 && <span className="storefront-status-overlay absolute bottom-1 left-1 rounded-sm px-1.5 py-1 text-[9px] font-medium">+{additionalItemCount} items</span>}
         </div>
 
         <div className="min-w-0">

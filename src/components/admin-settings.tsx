@@ -8,6 +8,7 @@ import { paiseToRupeesInput, rupeesToPaise } from "@/lib/money";
 import { normalizeNavigation, type NavigationLink } from "@/lib/navigation";
 import { ACTION_BUTTON_LABELS, ACTION_BUTTON_STYLE_KEYS, DEFAULT_ACTION_BUTTON_STYLES, actionButtonCssVariables, actionButtonStyleError, isHexColor, resolveActionButtonStyles, validateActionButtonStyles, type ActionButtonStyle, type ActionButtonStyleKey, type ActionButtonStyles } from "@/lib/action-button-styles";
 import { DEFAULT_CUSTOMER_LOGIN_REQUIREMENTS, type CustomerLoginRequirements } from "@/lib/customer-login-requirements";
+import { resolveStorefrontTheme, STOREFRONT_THEME_OPTIONS, type StorefrontTheme } from "@/lib/storefront-theme";
 
 type SettingRow = { id: string; setting_key: string; value: unknown; is_public: boolean };
 type Value = Record<string, unknown>;
@@ -19,6 +20,7 @@ type StoreDraft = {
   delivery_estimate: string; return_summary: string; seo_title: string; seo_description: string; social_links: SocialLinks;
   product_action_button_styles: ActionButtonStyles;
   customer_login_requirements: CustomerLoginRequirements;
+  storefront_theme: StorefrontTheme;
 };
 type FooterDraft = { description: string; newsletter_enabled: boolean; social_links: SocialLinks };
 
@@ -67,6 +69,7 @@ export function AdminSettings({ settings }: { settings: SettingRow[] }) {
     delivery_estimate: text(storeValue, "delivery_estimate"), return_summary: text(storeValue, "return_summary"), seo_title: text(storeValue, "seo_title"), seo_description: text(storeValue, "seo_description"), social_links: socialLinks(storeValue.social_links),
     product_action_button_styles: resolveActionButtonStyles(storeValue.product_action_button_styles),
     customer_login_requirements: { ...DEFAULT_CUSTOMER_LOGIN_REQUIREMENTS, ...(storeValue.customer_login_requirements && typeof storeValue.customer_login_requirements === "object" && !Array.isArray(storeValue.customer_login_requirements) ? storeValue.customer_login_requirements as Partial<CustomerLoginRequirements> : {}) },
+    storefront_theme: resolveStorefrontTheme(storeValue.storefront_theme),
   }), [storeRecord?.id]);
   const [store, setStore] = useState(initialStore);
   const [customerLoginRequirements, setCustomerLoginRequirements] = useState(initialStore.customer_login_requirements);
@@ -97,6 +100,7 @@ export function AdminSettings({ settings }: { settings: SettingRow[] }) {
       delivery_estimate: value.delivery_estimate.trim(), return_summary: value.return_summary.trim(), seo_title: value.seo_title.trim(), seo_description: value.seo_description.trim(), social_links: Object.fromEntries(socialRows(value.social_links).filter(([, item]) => item.trim())),
       product_action_button_styles: value.product_action_button_styles,
       customer_login_requirements: override?.customer_login_requirements ?? customerLoginRequirements,
+      storefront_theme: value.storefront_theme,
     };
   }
 
@@ -147,6 +151,29 @@ export function AdminSettings({ settings }: { settings: SettingRow[] }) {
         </label>)}
       </div>
       <div className="flex justify-end border-t border-line pt-5"><button disabled={busy === "store"} className="button-primary"><Save size={14} />{busy === "store" ? "Saving…" : "Save login requirements"}</button></div>
+    </form>
+
+    <form onSubmit={saveStore} className="space-y-6 border border-line bg-paper p-5 sm:p-7">
+      <div className="border-b border-line pb-4"><span className="eyebrow">Storefront appearance</span><h2 className="mt-1 font-display text-2xl">Storefront colour theme</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Choose one curated colour system for the public storefront. The admin dashboard keeps its existing appearance.</p></div>
+      <fieldset>
+        <legend className="sr-only">Storefront colour theme</legend>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {STOREFRONT_THEME_OPTIONS.map((option) => <label key={option.value} className={`theme-option-card ${store.storefront_theme === option.value ? "theme-option-card--selected" : ""}`}>
+            <input type="radio" name="storefront_theme" value={option.value} checked={store.storefront_theme === option.value} onChange={() => setStore((old) => ({ ...old, storefront_theme: option.value }))} className="sr-only" />
+            <span className={`theme-option-preview theme-option-preview--${option.value}`} aria-hidden="true"><span className="theme-option-preview__header" /><span className="theme-option-preview__content"><span /><span /><span /></span><span className="theme-option-preview__button" /></span>
+            <span className="mt-3 block text-sm font-semibold">{option.label}</span>
+            <span className="mt-1 block text-xs leading-5 text-muted">{option.description}</span>
+          </label>)}
+        </div>
+      </fieldset>
+      <div className="border-t border-line pt-5">
+        <span className="field-label">Live preview</span>
+        <div className={`theme-live-preview theme-live-preview--${store.storefront_theme}`}>
+          <div><span className="theme-live-preview__eyebrow">ZELNO</span><strong>Thoughtfully selected essentials</strong><small>Public storefront preview</small></div>
+          <span className="theme-live-preview__cta">Shop now</span>
+        </div>
+      </div>
+      <div className="flex justify-end border-t border-line pt-5"><button disabled={busy === "store"} className="button-primary"><Save size={14} />{busy === "store" ? "Saving…" : "Save storefront theme"}</button></div>
     </form>
 
     <form onSubmit={saveActionButtonStyles} className="space-y-6 border border-line bg-paper p-5 sm:p-7">

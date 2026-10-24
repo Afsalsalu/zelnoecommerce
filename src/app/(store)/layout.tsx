@@ -39,15 +39,17 @@ export default async function StoreLayout({ children }: Readonly<{ children: Rea
   ]);
 
   return (
-    <CustomerLoginRequirementsProvider initial={customerLoginRequirements}>
-      <StorefrontMobileBottomNav>
-      <SiteHeader settings={settings} navigation={navigation} announcement={announcement} />
-      <main id="main-content" className="min-h-[65vh]">
-        {children}
-      </main>
-      <SiteFooter settings={settings} footer={footer} />
-      <FloatingWhatsAppSupport settings={settings} />
-      </StorefrontMobileBottomNav>
-    </CustomerLoginRequirementsProvider>
+    <div data-storefront-theme={settings.storefront_theme || "white"} className={`storefront-theme storefront-theme--${settings.storefront_theme || "white"}`}>
+      <CustomerLoginRequirementsProvider initial={customerLoginRequirements}>
+        <StorefrontMobileBottomNav>
+          <SiteHeader settings={settings} navigation={navigation} announcement={announcement} />
+          <main id="main-content" className="min-h-[65vh]">
+            {children}
+          </main>
+          <SiteFooter settings={settings} footer={footer} />
+          <FloatingWhatsAppSupport settings={settings} />
+        </StorefrontMobileBottomNav>
+      </CustomerLoginRequirementsProvider>
+    </div>
   );
 }

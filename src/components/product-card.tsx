@@ -67,7 +67,7 @@ export function ProductCard({ product, quickAdd = true }: { product: Product; qu
 
   return <>
     <article className="group min-w-0">
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#efede6]">
+      <div className="relative aspect-[4/5] overflow-hidden bg-sand">
         <Link href={`/shop/${product.slug}`} aria-label={`View ${product.title}`} className="absolute inset-0 z-0">
           {image?.url ? <>
             <Image src={image.url} alt={image.alt_text || product.title} fill sizes="(max-width: 640px) 48vw, (max-width: 1024px) 32vw, 24vw" className="object-cover transition-opacity duration-500 ease-out group-hover:opacity-0 group-focus-within:opacity-0" />
@@ -76,9 +76,9 @@ export function ProductCard({ product, quickAdd = true }: { product: Product; qu
         </Link>
         {(product.badge || discount) && <span className="absolute left-3 top-3 z-10 bg-paper/95 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[.12em]">{product.badge || `${discount}% off`}</span>}
         <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 translate-y-0 items-center gap-2 transition-transform duration-300 md:translate-y-[calc(100%+0.75rem)] md:group-focus-within:translate-y-0 md:group-hover:translate-y-0">
-          <button type="button" title={wishlisted ? "Remove from wishlist" : "Add to wishlist"} aria-label={wishlisted ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`} aria-pressed={wishlisted} onClick={toggleWishlist} disabled={wishlistPending} className="grid size-10 place-items-center rounded-full border border-black/10 bg-white/95 text-ink shadow-sm transition-colors hover:bg-olive hover:text-white disabled:cursor-wait disabled:opacity-60"><Heart size={16} strokeWidth={1.5} fill={wishlisted ? "currentColor" : "none"} /></button>
-          {quickAdd && <button type="button" title={canBuy ? "Add to cart" : "Sold out"} aria-label={canBuy ? `Add ${product.title} to cart` : `${product.title} is sold out`} onClick={quickAddProduct} disabled={!canBuy} className="grid size-10 place-items-center rounded-full border border-black/10 bg-white/95 text-ink shadow-sm transition-colors hover:bg-olive hover:text-white disabled:cursor-not-allowed disabled:opacity-35"><ShoppingBag size={16} strokeWidth={1.5} /></button>}
-          <button type="button" title="Quick view" aria-label={`Quick view ${product.title}`} onClick={() => setQuickViewOpen(true)} className="grid size-10 place-items-center rounded-full border border-black/10 bg-white/95 text-ink shadow-sm transition-colors hover:bg-olive hover:text-white"><Eye size={16} strokeWidth={1.5} /></button>
+          <button type="button" title={wishlisted ? "Remove from wishlist" : "Add to wishlist"} aria-label={wishlisted ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`} aria-pressed={wishlisted} onClick={toggleWishlist} disabled={wishlistPending} className="storefront-action-control grid size-10 place-items-center rounded-full border border-line bg-paper/95 text-ink shadow-sm transition-colors disabled:cursor-wait disabled:opacity-60"><Heart size={16} strokeWidth={1.5} fill={wishlisted ? "currentColor" : "none"} /></button>
+          {quickAdd && <button type="button" title={canBuy ? "Add to cart" : "Sold out"} aria-label={canBuy ? `Add ${product.title} to cart` : `${product.title} is sold out`} onClick={quickAddProduct} disabled={!canBuy} className="storefront-action-control grid size-10 place-items-center rounded-full border border-line bg-paper/95 text-ink shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-35"><ShoppingBag size={16} strokeWidth={1.5} /></button>}
+          <button type="button" title="Quick view" aria-label={`Quick view ${product.title}`} onClick={() => setQuickViewOpen(true)} className="storefront-action-control grid size-10 place-items-center rounded-full border border-line bg-paper/95 text-ink shadow-sm transition-colors"><Eye size={16} strokeWidth={1.5} /></button>
         </div>
       </div>
       <div className="flex items-start justify-between gap-2 pt-3.5">
