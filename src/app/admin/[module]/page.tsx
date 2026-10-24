@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
+import { checkHeroBannerSchema } from "@/lib/admin-banner-schema-server";
+import { logHeroBannerDatabaseError } from "@/lib/admin-banner-schema";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { AdminProducts } from "@/components/admin-products";
 import { AdminCategories } from "@/components/admin-categories";
@@ -21,7 +23,7 @@ export default async function AdminModulePage({params}:{params:Params}){const {m
  let data:unknown=[];
  if(module==="customers"){const admin=createServiceSupabase();const [{data:profiles},{data:orders},{data:addresses}]=await Promise.all([admin.from("profiles").select("*").order("created_at",{ascending:false}).limit(500),admin.from("orders").select("user_id,customer_email,order_number,total,placed_at").not("user_id","is","null").order("placed_at",{ascending:false}).limit(2000),admin.from("addresses").select("user_id,city,state,pincode").limit(1000)]);data={profiles:profiles??[],orders:orders??[],addresses:addresses??[]};}
  else if(module==="coupons"){const {data:rows}=await supabase.from("coupons").select("*").order("created_at",{ascending:false});return <AdminCoupons coupons={rows??[]}/>;}
- else if(module==="homepage"){const [sections,banners,brands,faqs,testimonials]=await Promise.all([supabase.from("homepage_sections").select("*").order("sort_order"),supabase.from("homepage_banners").select("*").order("sort_order"),supabase.from("homepage_brands").select("*").order("sort_order"),supabase.from("faqs").select("*").order("sort_order"),supabase.from("testimonials").select("*").order("sort_order")]);return <AdminHomepage data={{sections:sections.data??[],banners:banners.data??[],brands:brands.data??[],faqs:faqs.data??[],testimonials:testimonials.data??[]}}/>;}
+ else if(module==="homepage"){const admin=createServiceSupabase();const [sections,banners,brands,faqs,testimonials,heroBannerSchema]=await Promise.all([supabase.from("homepage_sections").select("*").order("sort_order"),admin.from("homepage_banners").select("*").order("sort_order"),supabase.from("homepage_brands").select("*").order("sort_order"),supabase.from("faqs").select("*").order("sort_order"),supabase.from("testimonials").select("*").order("sort_order"),checkHeroBannerSchema(admin)]);if(banners.error)logHeroBannerDatabaseError("admin homepage banner load failed",banners.error);return <AdminHomepage data={{sections:sections.data??[],banners:banners.data??[],brands:brands.data??[],faqs:faqs.data??[],testimonials:testimonials.data??[]}} heroBannerSchema={heroBannerSchema}/>;}
  else if(module==="pages"){const {data:pages}=await supabase.from("site_pages").select("*").order("slug");return <AdminPages pages={pages??[]}/>;}
  else if(module==="settings"){const {data:rows}=await supabase.from("site_settings").select("*").order("setting_key");return <AdminSettings settings={rows??[]}/>;}
  else if(module==="inquiries"){const admin=createServiceSupabase();const {data:rows}=await admin.from("contact_enquiries").select("*").order("created_at",{ascending:false}).limit(500);return <AdminEnquiries enquiries={rows??[]}/>;}

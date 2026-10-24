@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, MessageCircle } from "lucide-react";
 import type { StoreSettings } from "@/lib/types";
 
 type FooterData = { description?: string; social_links?: Record<string, string>; newsletter_enabled?: boolean };
@@ -12,7 +12,7 @@ export function SiteFooter({ settings, footer }: { settings: StoreSettings; foot
           <Link href="/" className="inline-flex items-center gap-2.5"><span aria-hidden className="grid size-9 place-items-center border border-olive/50 font-display text-[14px] text-olive">Z</span><span className="text-[12px] font-semibold uppercase tracking-[.24em]">{settings.store_name || "ZELNO"}</span></Link>
           <p className="mt-5 max-w-xs text-sm leading-7 text-muted">{footer.description || settings.tagline || "Thoughtfully selected essentials for a better everyday home."}</p>
           {settings.contact_email && <a className="mt-5 inline-flex items-center gap-1 text-sm underline underline-offset-4" href={`mailto:${settings.contact_email}`}>{settings.contact_email}<ArrowUpRight size={14} /></a>}
-          {settings.whatsapp_number && <a className="mt-3 block text-sm underline underline-offset-4" href={`https://wa.me/${settings.whatsapp_number.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">WhatsApp us ↗</a>}
+          {settings.whatsapp_number && <a className="mt-3 inline-flex items-center gap-1.5 text-sm underline underline-offset-4" href={`https://wa.me/${settings.whatsapp_number.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"><MessageCircle size={14} aria-hidden="true" />WhatsApp us ↗</a>}
         </div>
         <div>
           <h2 className="eyebrow">Explore</h2>

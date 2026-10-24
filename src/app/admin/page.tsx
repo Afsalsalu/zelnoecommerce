@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Box, PackageCheck, ShoppingBag, Users } from "lucide-react";
+import { ArrowUpRight, Box, PackageCheck, Settings, ShoppingBag, Users } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { ADMIN_MODULES } from "@/lib/admin-modules";
 import { formatPrice } from "@/lib/utils";
@@ -105,7 +105,7 @@ export default async function AdminDashboard() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <span className="eyebrow">ZELNO · Studio</span>
+                  <span className="eyebrow">ZELNO Â· Studio</span>
                   <h3 className="mt-2 font-display text-2xl">{label}</h3>
                 </div>
                 <ArrowUpRight
@@ -134,7 +134,7 @@ export default async function AdminDashboard() {
                   <span>
                     <strong className="block text-sm">{order.order_number}</strong>
                     <small className="text-xs text-muted">
-                      {order.customer_name} · {new Date(order.placed_at).toLocaleDateString("en-IN")}
+                      {order.customer_name} Â· {new Date(order.placed_at).toLocaleDateString("en-IN")}
                     </small>
                   </span>
                   <span className="text-right">
@@ -153,7 +153,7 @@ export default async function AdminDashboard() {
           <section className="bg-paper p-5 sm:p-7">
             <div className="flex items-center justify-between">
               <h2 className="font-display text-2xl">Best-selling products</h2>
-              <Link href="/admin/products" className="text-[10px] underline underline-offset-4">Manage</Link>
+              <Link href="/admin/products" className="inline-flex items-center gap-1.5 text-[10px] underline underline-offset-4"><Settings size={13} aria-hidden="true" />Manage</Link>
             </div>
             {best.length ? (
               <ol className="mt-4 divide-y divide-line">
@@ -172,7 +172,7 @@ export default async function AdminDashboard() {
           <section className="bg-paper p-5 sm:p-7">
             <div className="flex items-center justify-between">
               <h2 className="font-display text-2xl">Stock watch</h2>
-              <Link href="/admin/products" className="text-[10px] underline underline-offset-4">Manage</Link>
+              <Link href="/admin/products" className="inline-flex items-center gap-1.5 text-[10px] underline underline-offset-4"><Settings size={13} aria-hidden="true" />Manage</Link>
             </div>
             {lowStock?.length ? (
               <ul className="mt-4 divide-y divide-line">
@@ -206,3 +206,5 @@ export default async function AdminDashboard() {
     </div>
   );
 }
+
+

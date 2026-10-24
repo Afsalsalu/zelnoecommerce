@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { checkoutSchema } from "@/lib/schemas";
 import { createServerSupabase, createServiceSupabase } from "@/lib/supabase/server";
 import { isRazorpayConfigured, isServiceRoleConfigured, isSupabaseConfigured } from "@/lib/env";
+import { recordCheckoutAddressAfterSuccess } from "@/lib/saved-address-server";
+import { getServerCustomerLoginRequirements } from "@/lib/customer-login-requirements-server";
 
 export async function POST(request: Request) {
   const parsed = checkoutSchema.safeParse(await request.json().catch(() => null));
@@ -10,8 +12,10 @@ export async function POST(request: Request) {
   const input = parsed.data;
   if (!isSupabaseConfigured || !isServiceRoleConfigured) return NextResponse.json({ error: "Checkout needs Supabase configuration. Add the server-side credentials and try again." }, { status: 503 });
   if (input.paymentMethod === "razorpay" && !isRazorpayConfigured) return NextResponse.json({ error: "Online payment is not configured yet. Please choose cash on delivery." }, { status: 503 });
+  const requirements = await getServerCustomerLoginRequirements();
   let userId: string | null = null;
   try { const sessionClient = await createServerSupabase(); const { data } = await sessionClient.auth.getUser(); userId = data.user?.id ?? null; } catch { /* Guest checkout is allowed. */ }
+  if (!userId && (requirements.require_login_checkout || (input.checkoutIntent === "buy-now" && requirements.require_login_buy_now))) return NextResponse.json({ error: "Please sign in before checkout.", loginRequired: true }, { status: 401, headers: { "cache-control": "no-store" } });
   const orderNumber = `ZK-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${randomBytes(5).toString("hex").toUpperCase()}`;
   const admin = createServiceSupabase();
   const { data, error } = await admin.rpc("create_checkout_order", {
@@ -31,5 +35,6 @@ export async function POST(request: Request) {
     const userMessage = code.includes("OUT_OF_STOCK") || code.includes("PRODUCT_UNAVAILABLE") || code.includes("VARIANT_UNAVAILABLE") ? "An item in your bag is unavailable or has changed. Please review your bag." : code.includes("COUPON") ? "That coupon is not valid for this order." : code.includes("COD_DISABLED") ? "Cash on delivery is currently unavailable." : "We couldn't place this order. Please review your details and try again.";
     return NextResponse.json({ error: userMessage }, { status: 409, headers: { "cache-control": "no-store" } });
   }
+  if (input.paymentMethod === "cod") await recordCheckoutAddressAfterSuccess(input, userId);
   return NextResponse.json({ ok: true, order: data, orderNumber }, { status: 201, headers: { "cache-control": "no-store" } });
 }

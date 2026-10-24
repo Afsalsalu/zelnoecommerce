@@ -2,29 +2,27 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowUpRight, Eye, Heart, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { ProductQuickView } from "@/components/product-quick-view";
 import { useCart } from "@/components/cart-provider";
+import { useWishlist } from "@/components/wishlist-provider";
+import { useCustomerLoginRequirements } from "@/components/customer-login-requirements-provider";
+import { customerLoginPath, writePendingCustomerAction } from "@/lib/customer-action";
 import type { Product, ProductImage } from "@/lib/types";
 import { discountPercent, formatPrice } from "@/lib/format";
-
-const WISHLIST_KEY = "zelno-wishlist-v1";
 
 function sortedImages(product: Product): ProductImage[] {
   return [...(product.product_images ?? [])].filter((image) => Boolean(image.url)).sort((a, b) => a.sort_order - b.sort_order);
 }
 
-function readWishlist(): string[] {
-  try {
-    const saved = JSON.parse(localStorage.getItem(WISHLIST_KEY) ?? "[]");
-    return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === "string") : [];
-  } catch { return []; }
-}
-
 export function ProductCard({ product, quickAdd = true }: { product: Product; quickAdd?: boolean }) {
-  const { add } = useCart();
+  const router = useRouter();
+  const { add, authenticated: cartAuthenticated, hydrated: cartHydrated } = useCart();
+  const { isWishlisted, isPending, toggle, authenticated: wishlistAuthenticated } = useWishlist();
+  const customerLoginRequirements = useCustomerLoginRequirements();
   const images = sortedImages(product);
   const image = images[0];
   const hoverImage = images[1];
@@ -33,23 +31,38 @@ export function ProductCard({ product, quickAdd = true }: { product: Product; qu
   const compare = variant?.compare_at_price ?? product.compare_at_price;
   const discount = discountPercent(price, compare);
   const canBuy = variant ? (variant.stock_quantity > 0 || variant.stock_status === "continue_selling" || product.continue_selling) : (product.stock_quantity > 0 || product.continue_selling);
-  const [wishlisted, setWishlisted] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
-
-  useEffect(() => { setWishlisted(readWishlist().includes(product.id)); }, [product.id]);
+  const wishlisted = isWishlisted(product.id);
+  const wishlistPending = isPending(product.id);
 
   function quickAddProduct() {
-    if (!canBuy) return;
-    add({ productId: product.id, variantId: variant?.id ?? null, slug: product.slug, title: product.title, variantName: variant?.name ?? "Standard", unitPrice: price, imageUrl: image?.url ?? null });
+    if (!canBuy || !cartHydrated) return;
+    const line = { productId: product.id, variantId: variant?.id ?? null, slug: product.slug, title: product.title, variantName: variant?.name ?? "Standard", unitPrice: price, imageUrl: image?.url ?? null, quantity: 1 };
+    if (!cartAuthenticated && customerLoginRequirements.require_login_cart) {
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      writePendingCustomerAction({ type: "cart", line, returnTo });
+      router.push(customerLoginPath(returnTo));
+      return;
+    }
+    add(line);
     toast.success("Added to your bag");
   }
 
-  function toggleWishlist() {
-    const current = readWishlist();
-    const next = current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id];
-    try { localStorage.setItem(WISHLIST_KEY, JSON.stringify(next)); } catch { /* Keep the active state local when storage is unavailable. */ }
-    setWishlisted(next.includes(product.id));
-    toast.success(next.includes(product.id) ? "Added to your wishlist" : "Removed from your wishlist");
+  async function toggleWishlist() {
+    if (wishlistPending) return;
+    const nextWishlisted = !wishlisted;
+    if (!wishlistAuthenticated && customerLoginRequirements.require_login_wishlist) {
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      writePendingCustomerAction({ type: "wishlist", productKey: product.id, returnTo });
+      router.push(customerLoginPath(returnTo));
+      return;
+    }
+    try {
+      await toggle(product.id, product);
+      toast.success(nextWishlisted ? "Added to your wishlist" : "Removed from your wishlist");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "We couldn't update your wishlist.");
+    }
   }
 
   return <>
@@ -63,7 +76,7 @@ export function ProductCard({ product, quickAdd = true }: { product: Product; qu
         </Link>
         {(product.badge || discount) && <span className="absolute left-3 top-3 z-10 bg-paper/95 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[.12em]">{product.badge || `${discount}% off`}</span>}
         <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 translate-y-0 items-center gap-2 transition-transform duration-300 md:translate-y-[calc(100%+0.75rem)] md:group-focus-within:translate-y-0 md:group-hover:translate-y-0">
-          <button type="button" title={wishlisted ? "Remove from wishlist" : "Add to wishlist"} aria-label={wishlisted ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`} aria-pressed={wishlisted} onClick={toggleWishlist} className="grid size-10 place-items-center rounded-full border border-black/10 bg-white/95 text-ink shadow-sm transition-colors hover:bg-olive hover:text-white"><Heart size={16} strokeWidth={1.5} fill={wishlisted ? "currentColor" : "none"} /></button>
+          <button type="button" title={wishlisted ? "Remove from wishlist" : "Add to wishlist"} aria-label={wishlisted ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`} aria-pressed={wishlisted} onClick={toggleWishlist} disabled={wishlistPending} className="grid size-10 place-items-center rounded-full border border-black/10 bg-white/95 text-ink shadow-sm transition-colors hover:bg-olive hover:text-white disabled:cursor-wait disabled:opacity-60"><Heart size={16} strokeWidth={1.5} fill={wishlisted ? "currentColor" : "none"} /></button>
           {quickAdd && <button type="button" title={canBuy ? "Add to cart" : "Sold out"} aria-label={canBuy ? `Add ${product.title} to cart` : `${product.title} is sold out`} onClick={quickAddProduct} disabled={!canBuy} className="grid size-10 place-items-center rounded-full border border-black/10 bg-white/95 text-ink shadow-sm transition-colors hover:bg-olive hover:text-white disabled:cursor-not-allowed disabled:opacity-35"><ShoppingBag size={16} strokeWidth={1.5} /></button>}
           <button type="button" title="Quick view" aria-label={`Quick view ${product.title}`} onClick={() => setQuickViewOpen(true)} className="grid size-10 place-items-center rounded-full border border-black/10 bg-white/95 text-ink shadow-sm transition-colors hover:bg-olive hover:text-white"><Eye size={16} strokeWidth={1.5} /></button>
         </div>

@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test tests/auth-flow.test.ts tests/whatsapp.test.ts tests/whatsapp-order-errors.test.ts tests/action-button-styles.test.ts tests/whatsapp-admin-settings.test.ts tests/whatsapp-support.test.ts",
+    "test": "node --import tsx --test tests/auth-flow.test.ts tests/whatsapp.test.ts tests/whatsapp-order-errors.test.ts tests/action-button-styles.test.ts tests/whatsapp-admin-settings.test.ts tests/whatsapp-support.test.ts tests/saved-addresses.test.ts tests/hero-carousel.test.ts tests/hero-overlay.test.ts tests/admin-banner-validation.test.ts tests/admin-banner-schema.test.ts tests/wishlist.test.ts tests/customer-login-requirements.test.ts",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts"
   },
   "dependencies": {

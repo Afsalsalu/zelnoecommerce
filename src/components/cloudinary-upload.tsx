@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Upload } from "lucide-react";
 import { toast } from "sonner";
 
 type Asset = { publicId: string; url: string; width: number | null; height: number | null; resourceType: string };
@@ -76,5 +77,7 @@ export function CloudinaryUpload({ onUploaded }: { onUploaded: (asset: Asset) =>
     }
   }
 
-  return <label className="inline-flex cursor-pointer items-center gap-2 border border-line bg-paper px-3 py-2 text-[10px] font-semibold uppercase tracking-[.12em] hover:border-olive">{busy ? "Uploading…" : "Upload image"}<input aria-label="Choose an image to upload" className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={busy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void upload(file); event.currentTarget.value = ""; }} /></label>;
+  return <label className="inline-flex cursor-pointer items-center gap-2 border border-line bg-paper px-3 py-2 text-[10px] font-semibold uppercase tracking-[.12em] hover:border-olive"><Upload size={13} aria-hidden="true" />{busy ? "Uploadingâ€¦" : "Upload image"}<input aria-label="Choose an image to upload" className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={busy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void upload(file); event.currentTarget.value = ""; }} /></label>;
 }
+
+

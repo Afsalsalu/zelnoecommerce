@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { Eye, ShoppingBag, X } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/components/cart-provider";
+import { useCustomerLoginRequirements } from "@/components/customer-login-requirements-provider";
+import { customerLoginPath, writePendingCustomerAction } from "@/lib/customer-action";
 import type { Product, ProductImage, ProductVariant } from "@/lib/types";
 import { formatPrice } from "@/lib/format";
 
@@ -19,7 +22,9 @@ function variantLabel(variant: ProductVariant) {
 }
 
 export function ProductQuickView({ product, onClose }: { product: Product; onClose: () => void }) {
-  const { add } = useCart();
+  const router = useRouter();
+  const { add, authenticated, hydrated } = useCart();
+  const customerLoginRequirements = useCustomerLoginRequirements();
   const dialogRef = useRef<HTMLDivElement>(null);
   const images = useMemo(() => sortedImages(product), [product]);
   const variants = product.product_variants ?? [];
@@ -52,8 +57,16 @@ export function ProductQuickView({ product, onClose }: { product: Product; onClo
   }, [onClose]);
 
   function addToBag() {
-    if (!canBuy) return;
-    add({ productId: product.id, variantId: variant?.id ?? null, slug: product.slug, title: product.title, variantName: variant?.name ?? "Standard", unitPrice: price, imageUrl: images[0]?.url ?? null });
+    if (!canBuy || !hydrated) return;
+    const line = { productId: product.id, variantId: variant?.id ?? null, slug: product.slug, title: product.title, variantName: variant?.name ?? "Standard", unitPrice: price, imageUrl: images[0]?.url ?? null, quantity: 1 };
+    if (!authenticated && customerLoginRequirements.require_login_cart) {
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      writePendingCustomerAction({ type: "cart", line, returnTo });
+      onClose();
+      router.push(customerLoginPath(returnTo));
+      return;
+    }
+    add(line);
     toast.success(`${product.title} added to your bag`);
   }
 
@@ -62,7 +75,7 @@ export function ProductQuickView({ product, onClose }: { product: Product; onClo
       <div className="flex items-center justify-between border-b border-line px-5 py-4 sm:px-7"><span className="eyebrow">Quick view</span><button type="button" aria-label="Close quick view" onClick={onClose} className="grid size-10 place-items-center text-muted hover:text-ink"><X size={19} /></button></div>
       <div className="grid gap-6 p-5 sm:grid-cols-[minmax(180px,.8fr)_1fr] sm:gap-7 sm:p-7">
         <div className="relative aspect-[4/5] overflow-hidden bg-[#efede6]">{images[0] ? <Image src={images[0].url} alt={images[0].alt_text || product.title} fill sizes="(max-width: 640px) 100vw, 240px" className="object-contain p-6" /> : <div className="absolute inset-0 grid place-items-center text-[10px] uppercase tracking-[.15em] text-muted">Image coming soon</div>}</div>
-        <div className="flex min-w-0 flex-col"><p className="eyebrow">{product.category?.name || "ZELNO collection"}</p><h2 id={`quick-view-title-${product.id}`} className="mt-2 font-display text-3xl leading-tight">{product.title}</h2><div className="mt-3 flex flex-wrap items-center gap-2 text-sm"><span className="font-medium">{formatPrice(price)}</span>{compare && compare > price && <span className="text-muted line-through">{formatPrice(Number(compare))}</span>}</div>{product.short_description && <p className="mt-4 text-sm leading-6 text-muted">{product.short_description}</p>}{variants.length > 1 && <label className="mt-6 block"><span className="field-label">Choose an option</span><select className="field-control" value={variantId} onChange={(event) => setVariantId(event.target.value)}>{variants.map((item) => <option key={item.id} value={item.id}>{variantLabel(item)}{item.stock_quantity <= 0 && item.stock_status !== "continue_selling" ? " - sold out" : ""}</option>)}</select></label>}<button type="button" disabled={!canBuy} onClick={addToBag} className="button-primary mt-6 w-full">{canBuy ? "Add to bag" : "Sold out"}</button><Link href={`/shop/${product.slug}`} onClick={onClose} className="button-secondary mt-3 w-full">View full details</Link></div>
+        <div className="flex min-w-0 flex-col"><p className="eyebrow">{product.category?.name || "ZELNO collection"}</p><h2 id={`quick-view-title-${product.id}`} className="mt-2 font-display text-3xl leading-tight">{product.title}</h2><div className="mt-3 flex flex-wrap items-center gap-2 text-sm"><span className="font-medium">{formatPrice(price)}</span>{compare && compare > price && <span className="text-muted line-through">{formatPrice(Number(compare))}</span>}</div>{product.short_description && <p className="mt-4 text-sm leading-6 text-muted">{product.short_description}</p>}{variants.length > 1 && <label className="mt-6 block"><span className="field-label">Choose an option</span><select className="field-control" value={variantId} onChange={(event) => setVariantId(event.target.value)}>{variants.map((item) => <option key={item.id} value={item.id}>{variantLabel(item)}{item.stock_quantity <= 0 && item.stock_status !== "continue_selling" ? " - sold out" : ""}</option>)}</select></label>}<button type="button" disabled={!canBuy} onClick={addToBag} className="button-primary mt-6 w-full"><ShoppingBag size={16} aria-hidden="true" />{canBuy ? "Add to bag" : "Sold out"}</button><Link href={`/shop/${product.slug}`} onClick={onClose} className="button-secondary mt-3 w-full"><Eye size={16} aria-hidden="true" />View full details</Link></div>
       </div>
     </div>
   </div>;

@@ -5,6 +5,8 @@ import { createServerSupabase, createServiceSupabase } from "@/lib/supabase/serv
 import { isServiceRoleConfigured, isSupabaseConfigured } from "@/lib/env";
 import { buildWhatsAppMessage, createWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE_INTRO, normalizeWhatsAppNumber } from "@/lib/whatsapp";
 import { supabaseErrorDetails, whatsappOrderErrorMessage, whatsappOrderErrorStatus } from "@/lib/whatsapp-order-errors";
+import { recordCheckoutAddressAfterSuccess } from "@/lib/saved-address-server";
+import { getServerCustomerLoginRequirements } from "@/lib/customer-login-requirements-server";
 
 function orderNumber() {
   return `ZK-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${randomBytes(5).toString("hex").toUpperCase()}`;
@@ -23,6 +25,16 @@ export async function POST(request: Request) {
   const parsed = whatsappOrderSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Check your order details." }, { status: 400, headers: { "cache-control": "no-store" } });
   if (!isSupabaseConfigured || !isServiceRoleConfigured) return failure(new Error("Supabase service-role access is not configured."), 503);
+  const requirements = await getServerCustomerLoginRequirements();
+  if (requirements.require_login_whatsapp) {
+    try {
+      const sessionClient = await createServerSupabase();
+      const { data } = await sessionClient.auth.getUser();
+      if (!data.user) return NextResponse.json({ error: "Please sign in before placing a WhatsApp order.", loginRequired: true }, { status: 401, headers: { "cache-control": "no-store" } });
+    } catch {
+      return NextResponse.json({ error: "Please sign in before placing a WhatsApp order.", loginRequired: true }, { status: 401, headers: { "cache-control": "no-store" } });
+    }
+  }
 
   try {
     return await createWhatsAppOrder(parsed.data);
@@ -69,6 +81,7 @@ async function createWhatsAppOrder(input: typeof whatsappOrderSchema._output) {
     logServerError("creating request", missingDataError);
     return failure(missingDataError, 503);
   }
+  await recordCheckoutAddressAfterSuccess(input, userId);
 
   const id = String((requestData as { id?: string }).id || "");
   const { data: order, error: orderError } = await admin.from("orders").select("id,order_number,customer_name,customer_email,customer_phone,shipping_address,total,whatsapp_message,whatsapp_number_snapshot,placed_at").eq("id", id).eq("order_source", "whatsapp").maybeSingle();

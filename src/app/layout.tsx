@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import { CartProvider } from "@/components/cart-provider";
+import { WishlistProvider } from "@/components/wishlist-provider";
 import "./globals.css";
 
 export const viewport: Viewport = { themeColor: "#f7f5f0", colorScheme: "light" };
@@ -10,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body className="min-h-screen bg-ivory text-ink antialiased"><CartProvider>{children}<Toaster position="bottom-right" richColors closeButton /></CartProvider></body></html>;
+  return <html lang="en"><body className="min-h-screen bg-ivory text-ink antialiased"><CartProvider><WishlistProvider>{children}</WishlistProvider><Toaster position="bottom-right" richColors closeButton /></CartProvider></body></html>;
 }

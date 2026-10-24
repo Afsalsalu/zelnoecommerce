@@ -1,4 +1,5 @@
 import type { ActionButtonStyles } from "@/lib/action-button-styles";
+import type { CustomerLoginRequirements } from "@/lib/customer-login-requirements";
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 export type Category = { id: string; name: string; slug: string; description: string; image_url: string | null; image_public_id: string | null; sort_order: number; is_active: boolean; featured_on_homepage: boolean };
 export type ProductImage = { id: string; product_id: string; cloudinary_public_id: string | null; url: string; alt_text: string; sort_order: number; width: number | null; height: number | null };
@@ -16,7 +17,7 @@ export type Product = {
 };
 export type Review = { id: string; product_id: string; customer_name: string; rating: number; body: string; created_at: string };
 export type HomepageSection = { id: string; section_key: string; title: string; content: Record<string, unknown>; sort_order: number; is_visible: boolean };
-export type HomepageBanner = { id: string; banner_type?: "hero" | "offer"; heading: string; description: string; cta_label: string; cta_href: string; desktop_image_url: string | null; mobile_image_url: string | null; image_alt: string; offer_badge?: string | null; alignment?: "left" | "right"; starts_at?: string | null; ends_at?: string | null; is_active: boolean; sort_order: number };
+export type HomepageBanner = { id: string; banner_type?: "hero" | "offer"; heading: string; description: string; cta_label: string; cta_href: string; desktop_image_url: string | null; mobile_image_url: string | null; image_alt: string; offer_badge?: string | null; alignment?: "left" | "right"; starts_at?: string | null; ends_at?: string | null; overlay_enabled?: boolean; overlay_color?: "dark" | "light"; overlay_opacity?: number; overlay_direction?: "full" | "bottom-to-top" | "left-to-right" | "right-to-left"; is_active: boolean; sort_order: number };
 export type HomepageBrand = { id: string; name: string; logo_url: string; destination_url: string | null; alt_text: string; is_active: boolean; sort_order: number };
 export type SitePage = { id: string; title: string; slug: string; body: string; seo_title: string | null; seo_description: string | null; is_published: boolean };
 export type StoreSettings = {
@@ -28,6 +29,7 @@ export type StoreSettings = {
   whatsapp_product_button_label?: string; whatsapp_order_button_label?: string; whatsapp_message_intro?: string;
   whatsapp_support_enabled?: boolean; whatsapp_support_message?: string;
   product_action_button_styles?: ActionButtonStyles;
+  customer_login_requirements?: CustomerLoginRequirements;
 };
 export type OrderStatus = "new" | "confirmed" | "packed" | "shipped" | "delivered" | "cancelled" | "returned" | "refunded";
 export type OrderSource = "website" | "whatsapp";

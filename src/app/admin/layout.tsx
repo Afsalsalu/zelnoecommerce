@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { LogoutButton } from "@/components/logout-button";
 import { AdminNavigation } from "@/components/admin-navigation";
@@ -13,10 +14,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="mx-auto flex h-full max-w-[1600px] items-center justify-between gap-4 px-5 sm:px-8">
           <Link href="/admin" className="flex items-center gap-2.5">
             <span aria-hidden className="grid size-8 place-items-center border border-olive/50 font-display text-olive">Z</span>
-            <span className="text-[11px] font-semibold uppercase tracking-[.2em]">ZELNO · Studio</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[.2em]">ZELNO Â· Studio</span>
           </Link>
           <div className="flex items-center gap-5">
-            <Link href="/" className="text-xs underline underline-offset-4">View storefront</Link>
+            <Link href="/" className="inline-flex items-center gap-1.5 text-xs underline underline-offset-4"><ExternalLink size={14} aria-hidden="true" />View storefront</Link>
             <LogoutButton />
           </div>
         </div>
@@ -28,3 +29,5 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     </div>
   );
 }
+
+

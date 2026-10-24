@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
+import { bannerDatabaseErrorMessage, heroBannerDatabaseField, logHeroBannerDatabaseError } from "@/lib/admin-banner-schema";
+import { checkHeroBannerSchema } from "@/lib/admin-banner-schema-server";
 import { HOMEPAGE_DEFAULT_SECTIONS } from "@/lib/homepage-sections";
 import { createServiceSupabase } from "@/lib/supabase/server";
 import { normalizeWhatsAppNumber } from "@/lib/whatsapp";
 import { validateActionButtonStyles } from "@/lib/action-button-styles";
+import { customerLoginRequirementsSchema } from "@/lib/customer-login-requirements";
 
 const uuid = z.string().uuid();
-const relativePath = z.string().max(250).refine((value) => value.startsWith("/") && !value.startsWith("//"), "Use a site-relative path.");
+const relativePath = z.string().trim().min(1, "Button path is required.").max(250).refine((value) => value.startsWith("/") && !value.startsWith("//"), "Use a site-relative path.");
 const optionalEmail = z.string().trim().max(180).refine((value) => !value || z.email().safeParse(value).success, "Use a valid email address.");
 const optionalUrl = z.string().trim().max(500).refine((value) => !value || /^https:\/\//.test(value), "Use an HTTPS URL.");
 const optionalDestination = z.string().trim().max(500).refine((value) => {
@@ -48,6 +51,7 @@ const storeSettingsSchema = z.object({
   whatsapp_support_enabled: z.boolean().optional(),
   whatsapp_support_message: z.string().trim().max(240).optional(),
   product_action_button_styles: actionButtonStyles,
+  customer_login_requirements: customerLoginRequirementsSchema.optional(),
 }).strict().superRefine((value, context) => {
   if (value.whatsapp_number) {
     try { normalizeWhatsAppNumber(value.whatsapp_number); }
@@ -60,7 +64,7 @@ const footerSettingsSchema = z.object({ description: z.string().trim().max(1200)
 const navigationSettingsSchema = z.object({ links: z.array(z.object({ label: z.string().trim().min(1).max(80), href: relativePath })).max(30) }).strict();
 const schemas = {
   section: z.object({ section_key: z.string().trim().regex(/^[a-z][a-z0-9_]{1,60}$/), title: z.string().trim().max(180), content: z.record(z.string(), z.unknown()), sort_order: z.number().int(), is_visible: z.boolean() }),
-  banner: z.object({ banner_type: z.enum(["hero", "offer"]).default("hero"), heading: z.string().max(180), description: z.string().max(1200), cta_label: z.string().max(100), cta_href: relativePath, desktop_image_url: z.string().url().nullable(), mobile_image_url: z.string().url().nullable(), image_alt: z.string().max(255), offer_badge: z.string().trim().max(120).nullable().optional(), alignment: z.enum(["left", "right"]).default("left"), starts_at: optionalScheduleDate.nullable().optional(), ends_at: optionalScheduleDate.nullable().optional(), sort_order: z.number().int(), is_active: z.boolean() }),
+  banner: z.object({ banner_type: z.enum(["hero", "offer"]).default("hero"), heading: z.string().trim().min(1, "Heading is required.").max(180), description: z.string().max(1200), cta_label: z.string().trim().min(1, "Button label is required.").max(100), cta_href: relativePath, desktop_image_url: z.string().url().nullable(), mobile_image_url: z.string().url().nullable(), image_alt: z.string().max(255), offer_badge: z.string().trim().max(120).nullable().optional(), alignment: z.enum(["left", "right"]).default("left"), starts_at: optionalScheduleDate.nullable().optional(), ends_at: optionalScheduleDate.nullable().optional(), overlay_enabled: z.boolean().optional(), overlay_color: z.enum(["dark", "light"]).optional(), overlay_opacity: z.number().int().min(0).max(80).optional(), overlay_direction: z.enum(["full", "bottom-to-top", "left-to-right", "right-to-left"]).optional(), sort_order: z.number().int(), is_active: z.boolean() }),
   brand: z.object({ name: z.string().trim().min(1).max(120), logo_url: z.string().url(), destination_url: optionalDestination.nullable().optional(), alt_text: z.string().trim().min(1).max(255), sort_order: z.number().int(), is_active: z.boolean() }),
   faq: z.object({ question: z.string().trim().min(2).max(300), answer: z.string().trim().min(2).max(5000), sort_order: z.number().int(), is_published: z.boolean() }),
   testimonial: z.object({ customer_name: z.string().trim().min(2).max(120), quote: z.string().trim().min(5).max(1500), rating: z.number().int().min(1).max(5), is_approved: z.boolean(), sort_order: z.number().int() }),
@@ -91,6 +95,11 @@ function invalidFields(result: { success: false; error: z.ZodError }) {
 
 function invalidId(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
+}
+
+function mapBannerDatabaseError(error: Parameters<typeof bannerDatabaseErrorMessage>[0]) {
+  logHeroBannerDatabaseError("banner save failed", error);
+  return { error: bannerDatabaseErrorMessage(error), field: heroBannerDatabaseField(error) };
 }
 
 export async function POST(request: Request) {
@@ -129,8 +138,12 @@ export async function POST(request: Request) {
       if (!parsed.success) return invalidFields(parsed);
       if (parsed.data.banner_type === "offer" && !parsed.data.desktop_image_url) return NextResponse.json({ error: "Offer banners require a desktop image.", field: "desktop_image_url" }, { status: 400 });
       if (parsed.data.starts_at && parsed.data.ends_at && Date.parse(parsed.data.starts_at) > Date.parse(parsed.data.ends_at)) return NextResponse.json({ error: "The offer end date must be after the start date.", field: "ends_at" }, { status: 400 });
+      if (parsed.data.banner_type === "hero") {
+        const schema = await checkHeroBannerSchema(admin);
+        if (!schema.ready) return NextResponse.json({ error: schema.message, field: schema.field }, { status: schema.kind === "permission" ? 503 : 409 });
+      }
       const result = id ? await admin.from("homepage_banners").update(parsed.data).eq("id", id).select("id").single() : await admin.from("homepage_banners").insert(parsed.data).select("id").single();
-      if (result.error) return NextResponse.json({ error: "Could not save this content. Check required fields and unique keys." }, { status: 409 });
+      if (result.error) return NextResponse.json(mapBannerDatabaseError(result.error), { status: 409 });
       return NextResponse.json({ ok: true, id: result.data?.id }, { status: 201 });
     }
     case "brand": {

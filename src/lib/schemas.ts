@@ -12,7 +12,7 @@ export const checkoutSchema = z.object({
   city: z.string().trim().min(2).max(120), state: z.string().trim().min(2).max(120),
   pincode: z.string().regex(/^[0-9]{6}$/, "Enter a valid 6-digit pincode."),
   notes: z.string().trim().max(1000).optional().default(""),
-  shippingMethod: z.string().trim().min(2).max(40).default("standard"),
+  shippingMethod: z.string().trim().min(2).max(40).default("standard"), checkoutIntent: z.enum(["standard", "buy-now"]).optional(),
   paymentMethod: z.enum(["cod", "razorpay"]), couponCode: z.string().trim().max(40).optional().default(""),
   items: z.array(cartLineSchema).min(1).max(40),
 });

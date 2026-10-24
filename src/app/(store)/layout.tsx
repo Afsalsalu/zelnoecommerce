@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { FloatingWhatsAppSupport } from "@/components/floating-whatsapp-support";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { StorefrontMobileBottomNav } from "@/components/storefront-mobile-bottom-nav";
+import { CustomerLoginRequirementsProvider } from "@/components/customer-login-requirements-provider";
+import { getServerCustomerLoginRequirements } from "@/lib/customer-login-requirements-server";
 import { getAnnouncement, getFooterSettings, getNavigation, getStoreSettings } from "@/lib/store";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -27,19 +30,24 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function StoreLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [settings, navigation, footer, announcement] = await Promise.all([
+  const [settings, navigation, footer, announcement, customerLoginRequirements] = await Promise.all([
     getStoreSettings(),
     getNavigation(),
     getFooterSettings(),
     getAnnouncement(),
+    getServerCustomerLoginRequirements(),
   ]);
 
   return (
-    <>
+    <CustomerLoginRequirementsProvider initial={customerLoginRequirements}>
+      <StorefrontMobileBottomNav>
       <SiteHeader settings={settings} navigation={navigation} announcement={announcement} />
-      <main id="main-content" className="min-h-[65vh]">{children}</main>
+      <main id="main-content" className="min-h-[65vh]">
+        {children}
+      </main>
       <SiteFooter settings={settings} footer={footer} />
       <FloatingWhatsAppSupport settings={settings} />
-    </>
+      </StorefrontMobileBottomNav>
+    </CustomerLoginRequirementsProvider>
   );
 }

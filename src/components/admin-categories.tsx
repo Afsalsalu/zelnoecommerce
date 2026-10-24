@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
 import type { Category } from "@/lib/types";
@@ -85,7 +85,7 @@ export function AdminCategories({ categories: initial }: { categories: Category[
   }
 
   async function remove(item: Category) {
-    if (!confirm(`Delete “${item.name}”? Products will remain without a collection.`)) return;
+    if (!confirm(`Delete â€œ${item.name}â€? Products will remain without a collection.`)) return;
     try {
       const response = await fetch("/api/admin/categories", {
         method: "DELETE",
@@ -125,7 +125,7 @@ export function AdminCategories({ categories: initial }: { categories: Category[
           <label className="block"><span className="field-label">Sort order</span><input type="number" className="field-control" value={draft.sort_order} onChange={(event) => setDraft({ ...draft, sort_order: Number(event.target.value) })} /></label>
           <label className="flex items-center gap-2 text-xs"><input type="checkbox" className="accent-olive" checked={draft.is_active} onChange={(event) => setDraft({ ...draft, is_active: event.target.checked })} />Active</label>
           <label className="flex items-center gap-2 text-xs"><input type="checkbox" className="accent-olive" checked={draft.featured_on_homepage} onChange={(event) => setDraft({ ...draft, featured_on_homepage: event.target.checked })} />Featured on homepage</label>
-          <div className="flex justify-end gap-2"><button type="button" onClick={() => setDraft(null)} className="button-secondary">Cancel</button><button disabled={busy} className="button-primary">{busy ? "Saving…" : "Save category"}</button></div>
+          <div className="flex justify-end gap-2"><button type="button" onClick={() => setDraft(null)} className="button-secondary"><X size={14} aria-hidden="true" />Cancel</button><button disabled={busy} className="button-primary"><Save size={14} aria-hidden="true" />{busy ? "Savingâ€¦" : "Save category"}</button></div>
         </form>
       </div>}
 
@@ -133,3 +133,5 @@ export function AdminCategories({ categories: initial }: { categories: Category[
     </div>
   );
 }
+
+

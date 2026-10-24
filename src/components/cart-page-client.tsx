@@ -3,14 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, MessageCircle, Minus, Plus, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, Check, MessageCircle, Minus, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/components/cart-provider";
+import { useCustomerLoginRequirements } from "@/components/customer-login-requirements-provider";
+import { customerLoginPath } from "@/lib/customer-action";
 import { actionButtonCssVariables, resolveActionButtonStyles, type ActionButtonStyles } from "@/lib/action-button-styles";
 import { formatPrice } from "@/lib/format";
 
 export function CartPageClient({ shippingFee, freeMinimum, currency, whatsappEnabled, whatsappCartEnabled, whatsappButtonLabel, actionButtonStyles }: { shippingFee: number; freeMinimum: number; currency: string; whatsappEnabled: boolean; whatsappCartEnabled: boolean; whatsappButtonLabel?: string; actionButtonStyles?: ActionButtonStyles }) {
-  const { items, couponCode, setCouponCode, setQuantity, remove, subtotal, hydrated } = useCart();
+  const router = useRouter();
+  const { items, couponCode, setCouponCode, setQuantity, remove, subtotal, hydrated, authenticated } = useCart();
+  const customerLoginRequirements = useCustomerLoginRequirements();
   const [code, setCode] = useState(couponCode);
   const [discount, setDiscount] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -42,6 +47,9 @@ export function CartPageClient({ shippingFee, freeMinimum, currency, whatsappEna
 
   const shipping = subtotal - discount >= freeMinimum ? 0 : shippingFee;
   const buttonStyles = resolveActionButtonStyles(actionButtonStyles);
+  function guardLink(event: React.MouseEvent<HTMLAnchorElement>, next: string, required: boolean) {
+    if (!authenticated && required) { event.preventDefault(); router.push(customerLoginPath(next)); }
+  }
 
   if (!hydrated) return <div className="py-20 text-center text-sm text-muted">Loading your bag…</div>;
   if (!items.length) return <section className="mx-auto max-w-3xl px-5 py-24 text-center"><span className="eyebrow">A good place to begin</span><h1 className="mt-4 font-display text-5xl">Your bag is empty.</h1><p className="mt-4 text-sm text-muted">Thoughtfully selected pieces are waiting to find a place at home.</p><Link href="/shop" className="button-primary mt-7">Explore the shop<ArrowRight size={15}/></Link></section>;
@@ -58,10 +66,10 @@ export function CartPageClient({ shippingFee, freeMinimum, currency, whatsappEna
       </div>
       <aside className="h-fit bg-paper p-5 sm:p-7">
         <h2 className="font-display text-2xl">Order summary</h2>
-        <form onSubmit={applyCoupon} className="mt-5 border-b border-line pb-5"><label className="field-label" htmlFor="coupon">Offer code</label><div className="flex gap-2"><input id="coupon" className="field-control min-w-0" value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="Enter code" maxLength={40}/>{couponCode ? <button type="button" className="button-secondary min-h-12 px-3" onClick={removeCoupon}>Remove</button> : <button disabled={busy || !code.trim()} className="button-secondary min-h-12 px-4">Apply</button>}</div>{couponCode && <p className="mt-2 text-xs text-olive">{couponCode} applied · {formatPrice(discount, currency)} saved</p>}</form>
+        <form onSubmit={applyCoupon} className="mt-5 border-b border-line pb-5"><label className="field-label" htmlFor="coupon">Offer code</label><div className="flex gap-2"><input id="coupon" className="field-control min-w-0" value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="Enter code" maxLength={40}/>{couponCode ? <button type="button" className="button-secondary min-h-12 px-3" onClick={removeCoupon}><X size={14} aria-hidden="true" />Remove</button> : <button disabled={busy || !code.trim()} className="button-secondary min-h-12 px-4"><Check size={14} aria-hidden="true" />Apply</button>}</div>{couponCode && <p className="mt-2 text-xs text-olive">{couponCode} applied · {formatPrice(discount, currency)} saved</p>}</form>
         <dl className="space-y-3 py-5 text-sm"><div className="flex justify-between"><dt className="text-muted">Subtotal</dt><dd>{formatPrice(subtotal, currency)}</dd></div><div className="flex justify-between"><dt className="text-muted">Shipping</dt><dd>{shipping ? formatPrice(shipping, currency) : "Complimentary"}</dd></div>{discount > 0 && <div className="flex justify-between text-olive"><dt>Offer</dt><dd>−{formatPrice(discount, currency)} saved</dd></div>}<div className="flex justify-between border-t border-line pt-4 text-base font-semibold"><dt>Estimated total</dt><dd>{formatPrice(Math.max(0, subtotal - discount + shipping), currency)}</dd></div></dl>
         <p className="mb-5 text-[11px] leading-5 text-muted">Final prices, stock and shipping are confirmed securely at checkout.</p>
-        <div className="space-y-3"><Link href="/checkout" className="button-primary w-full">Continue to checkout<ArrowRight size={15}/></Link>{whatsappEnabled && whatsappCartEnabled && <Link href="/checkout?whatsapp=cart" style={actionButtonCssVariables(buttonStyles.buy_via_whatsapp)} className="button-secondary action-button flex w-full items-center justify-center gap-2"><MessageCircle size={16}/>{whatsappButtonLabel || "Order via WhatsApp"}</Link>}</div>
+        <div className="space-y-3"><Link href="/checkout" onClick={(event) => guardLink(event, "/checkout", customerLoginRequirements.require_login_checkout)} className="button-primary w-full">Continue to checkout<ArrowRight size={15}/></Link>{whatsappEnabled && whatsappCartEnabled && <Link href="/checkout?whatsapp=cart" onClick={(event) => guardLink(event, "/checkout?whatsapp=cart", customerLoginRequirements.require_login_whatsapp || customerLoginRequirements.require_login_checkout)} style={actionButtonCssVariables(buttonStyles.buy_via_whatsapp)} className="button-secondary action-button flex w-full items-center justify-center gap-2"><MessageCircle size={16}/>{whatsappButtonLabel || "Order via WhatsApp"}</Link>}</div>
         <Link href="/shop" className="mt-4 block text-center text-xs underline underline-offset-4">Continue shopping</Link>
       </aside>
     </div>

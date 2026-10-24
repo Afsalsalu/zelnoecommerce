@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
-import { FileText, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { FileText, Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import type { SitePage } from "@/lib/types";
 import { slugify } from "@/lib/utils";
@@ -87,7 +87,7 @@ export function AdminPages({ pages: initial }: { pages: SitePage[] }) {
   }
 
   async function remove(page: SitePage) {
-    if (!confirm(`Delete “${page.title}”? This cannot be undone.`)) return;
+    if (!confirm(`Delete â€œ${page.title}â€? This cannot be undone.`)) return;
     try {
       const response = await fetch("/api/admin/content", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ entity: "page", id: page.id }) });
       const body = await response.json() as ApiError;
@@ -113,7 +113,7 @@ export function AdminPages({ pages: initial }: { pages: SitePage[] }) {
 
       <section className="overflow-hidden border border-line bg-paper">
         <div className="flex items-center justify-between border-b border-line px-4 py-4 sm:px-6"><div><span className="eyebrow">Pages</span><p className="mt-1 text-xs text-muted">{filtered.length} of {pages.length} shown</p></div><FileText size={17} className="text-olive" /></div>
-        {filtered.length ? <div className="divide-y divide-line">{filtered.map((page) => <article key={page.id} className="flex flex-wrap items-center justify-between gap-4 px-4 py-5 sm:px-6"><div className="min-w-0"><h2 className="truncate font-display text-2xl">{page.title}</h2><p className="mt-1 truncate text-xs text-muted">/{page.slug}</p><p className="mt-2 line-clamp-2 max-w-2xl whitespace-pre-line text-xs leading-5 text-muted">{page.body || "No body content yet."}</p></div><div className="flex shrink-0 items-center gap-2"><span className={`text-[10px] font-semibold uppercase tracking-[.13em] ${page.is_published ? "text-olive" : "text-muted"}`}>{page.is_published ? "Published" : "Draft"}</span><button title="Edit page" onClick={() => open(page)} className="grid size-9 place-items-center border border-line"><Pencil size={14} /></button><button title="Delete page" onClick={() => remove(page)} className="grid size-9 place-items-center border border-line text-red-700"><Trash2 size={14} /></button></div></article>)}</div> : <div className="grid min-h-48 place-items-center px-5 py-12 text-center"><div><FileText size={20} className="mx-auto text-muted" /><p className="mt-3 text-sm text-muted">No pages match this view.</p><button onClick={() => open()} className="button-secondary mt-4">Create a page</button></div></div>}
+        {filtered.length ? <div className="divide-y divide-line">{filtered.map((page) => <article key={page.id} className="flex flex-wrap items-center justify-between gap-4 px-4 py-5 sm:px-6"><div className="min-w-0"><h2 className="truncate font-display text-2xl">{page.title}</h2><p className="mt-1 truncate text-xs text-muted">/{page.slug}</p><p className="mt-2 line-clamp-2 max-w-2xl whitespace-pre-line text-xs leading-5 text-muted">{page.body || "No body content yet."}</p></div><div className="flex shrink-0 items-center gap-2"><span className={`text-[10px] font-semibold uppercase tracking-[.13em] ${page.is_published ? "text-olive" : "text-muted"}`}>{page.is_published ? "Published" : "Draft"}</span><button title="Edit page" onClick={() => open(page)} className="grid size-9 place-items-center border border-line"><Pencil size={14} /></button><button title="Delete page" onClick={() => remove(page)} className="grid size-9 place-items-center border border-line text-red-700"><Trash2 size={14} /></button></div></article>)}</div> : <div className="grid min-h-48 place-items-center px-5 py-12 text-center"><div><FileText size={20} className="mx-auto text-muted" /><p className="mt-3 text-sm text-muted">No pages match this view.</p><button onClick={() => open()} className="button-secondary mt-4"><Plus size={14} aria-hidden="true" />Create a page</button></div></div>}
       </section>
 
       {draft && <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 overflow-auto bg-ink/45 p-3 sm:p-6"><div className="mx-auto max-w-4xl bg-ivory"><header className="flex items-center justify-between border-b border-line px-4 py-4 sm:px-7"><div><span className="eyebrow">Page editor</span><h2 className="mt-1 font-display text-2xl">{draft.id ? "Edit page" : "New page"}</h2></div><button onClick={() => setDraft(null)} aria-label="Close page editor" className="grid size-10 place-items-center"><X /></button></header><form onSubmit={save} className="space-y-6 p-4 sm:p-7">
@@ -121,8 +121,10 @@ export function AdminPages({ pages: initial }: { pages: SitePage[] }) {
         <label className="block"><span className="field-label">Page body</span><textarea required={false} maxLength={30000} rows={16} className="field-control min-h-72" value={draft.body} onChange={(event) => patch("body", event.target.value)} /><small className="mt-1 block text-[10px] text-muted">Plain text only. Line breaks are preserved on the public page; HTML and scripts are not accepted.</small>{fieldError?.field === "body" && <small className="mt-1 block text-xs text-red-700">{fieldError.message}</small>}</label>
         <div className="grid gap-4 sm:grid-cols-2"><label><span className="field-label">SEO title</span><input maxLength={180} className="field-control" value={draft.seo_title} onChange={(event) => patch("seo_title", event.target.value)} />{fieldError?.field === "seo_title" && <small className="mt-1 block text-xs text-red-700">{fieldError.message}</small>}</label><label><span className="field-label">SEO description</span><textarea maxLength={320} rows={3} className="field-control" value={draft.seo_description} onChange={(event) => patch("seo_description", event.target.value)} />{fieldError?.field === "seo_description" && <small className="mt-1 block text-xs text-red-700">{fieldError.message}</small>}</label></div>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="accent-olive" checked={draft.is_published} onChange={(event) => patch("is_published", event.target.checked)} />Publish this page</label>
-        <div className="flex flex-wrap justify-end gap-3 border-t border-line pt-5"><button type="button" className="button-secondary" onClick={() => setDraft(null)}>Cancel</button><button disabled={busy} className="button-primary">{busy ? "Saving…" : draft.id ? "Save page" : "Create page"}</button></div>
+        <div className="flex flex-wrap justify-end gap-3 border-t border-line pt-5"><button type="button" className="button-secondary" onClick={() => setDraft(null)}><X size={14} aria-hidden="true" />Cancel</button><button disabled={busy} className="button-primary">{busy ? "Savingâ€¦" : draft.id ? <><Save size={14} aria-hidden="true" />Save page</> : <><Plus size={14} aria-hidden="true" />Create page</>}</button></div>
       </form></div></div>}
     </div>
   );
 }
+
+

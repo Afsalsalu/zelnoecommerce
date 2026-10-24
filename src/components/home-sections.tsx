@@ -6,6 +6,7 @@ import { NewsletterSignup } from "@/components/newsletter-signup";
 import { CategoryCarousel } from "@/components/category-carousel";
 import { OfferBannerCarousel } from "@/components/offer-banner-carousel";
 import { BrandLogoMarquee } from "@/components/brand-logo-marquee";
+import { HeroBannerCarousel } from "@/components/hero-banner-carousel";
 import type { Category, HomepageBanner, HomepageBrand, HomepageSection, Product, StoreSettings } from "@/lib/types";
 
 const iconMap = { "badge-check": BadgeCheck, "lock-keyhole": LockKeyhole, "message-circle": MessageCircle, "package-check": PackageCheck };
@@ -16,16 +17,8 @@ function Heading({ eyebrow, title, description, href, cta }: { eyebrow?: string;
 }
 
 function HeroSection({ data, settings, section }: { data: HomeData; settings: StoreSettings; section: HomepageSection }) {
-  const hero = data.banners[0];
-  if (!hero) return null;
-  return <section key={section.id} className="relative min-h-[580px] overflow-hidden bg-sand sm:min-h-[650px] lg:min-h-[min(780px,calc(100svh-108px))]">
-    {hero.desktop_image_url && <Image src={hero.desktop_image_url} alt={hero.image_alt || hero.heading} fill priority sizes="100vw" className="object-cover" />}
-    <div className="absolute inset-0 bg-gradient-to-r from-ivory/95 via-ivory/65 to-ivory/0 sm:from-ivory/90 sm:via-ivory/45" />
-    <div className="relative mx-auto flex min-h-[580px] max-w-[1440px] items-center px-5 py-14 sm:min-h-[650px] sm:px-8 lg:min-h-[min(780px,calc(100svh-108px))] lg:px-12">
-      <div className="max-w-2xl"><span className="eyebrow">{settings.store_name || "ZELNO Kitchen"}</span><h1 className="mt-5 font-display text-6xl leading-[.94] tracking-[-.04em] sm:text-7xl lg:text-[92px]">{hero.heading}</h1><p className="mt-6 max-w-lg text-sm leading-7 text-ink/75 sm:text-base">{hero.description}</p><Link href={hero.cta_href} className="button-primary mt-8">{hero.cta_label}<ArrowRight size={15} /></Link></div>
-    </div>
-    <div className="absolute bottom-5 right-6 hidden text-[9px] font-semibold uppercase tracking-[.18em] text-ink/60 sm:block">Objects for everyday living</div>
-  </section>;
+  if (!data.banners.length) return null;
+  return <HeroBannerCarousel key={section.id} banners={data.banners} storeName={settings.store_name} />;
 }
 
 function ProductSection({ section, products, mode }: { section: HomepageSection; products: Product[]; mode: "latest" | "featured" }) {
